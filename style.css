@@ -222,23 +222,20 @@ img,svg{display:block}
 .hd-chat-sub{font-size:11px;color:var(--t3);font-weight:400}
 .hd-chat-sub em{color:var(--orange);font-style:normal;font-weight:600}
 
-/* ---- Chat Welcome (Agent 空态) ---- */
-.chat-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:45vh;text-align:center;padding:0 20px;animation:fadeUp .4s var(--ease)}
-.cw-icon{display:none}
-.cw-agent-badge{display:inline-flex;align-items:center;padding:4px 14px;background:var(--bg);color:var(--t2);border-radius:var(--r-full);font-size:11px;font-weight:500;margin-bottom:10px}
-.cw-title{font-size:20px;font-weight:700;margin-bottom:6px;color:var(--t1)}
-.cw-desc{font-size:13px;color:var(--t3);line-height:1.8;margin-bottom:10px}
-.cw-memory-hint{font-size:11px;color:var(--orange);font-weight:500;margin-bottom:14px;display:none}
+/* ---- Chat Welcome (极简空态，参考主流 AI 对话) ---- */
+.chat-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;padding:0 32px;animation:fadeUp .4s var(--ease)}
+.cw-question{font-size:24px;font-weight:700;color:var(--t1);line-height:1.4;margin:0;letter-spacing:-.3px}
+.cw-memory-hint{font-size:12px;color:var(--orange);font-weight:500;margin-top:12px;display:none}
 .cw-memory-hint em{font-style:normal;font-weight:700}
-.cw-skills-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:280px}
-.cw-skill-tag{display:inline-block;padding:3px 10px;background:#F5F5F5;border-radius:var(--r-full);font-size:10px;font-weight:500;color:var(--t3)}
 
 /* ---- Chat Bottom (chips + input, fixed above tabbar) ---- */
 .chat-bottom{position:fixed;bottom:calc(54px + var(--safe-b));left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--white);border-top:1px solid var(--border);z-index:200}
-.chat-chips{display:flex;gap:8px;overflow-x:auto;padding:10px 16px 6px;scrollbar-width:none;-ms-overflow-style:none}
+.chat-chips{display:flex;gap:10px;overflow-x:auto;padding:12px 16px 8px;scrollbar-width:none;-ms-overflow-style:none}
 .chat-chips::-webkit-scrollbar{display:none}
-.chip{display:inline-flex;align-items:center;gap:4px;padding:8px 16px;background:var(--white);border:1.5px solid #E8E8E8;border-radius:var(--r-full);white-space:nowrap;font-size:13px;font-weight:500;color:var(--t1);cursor:pointer;transition:.2s;flex-shrink:0;user-select:none}
-.chip:active{border-color:var(--orange);color:var(--orange);background:var(--orange-ll);transform:scale(.97)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;background:#FAFAFA;border:1px solid #EEEEEE;border-radius:12px;white-space:nowrap;font-size:13px;font-weight:500;color:var(--t1);cursor:pointer;transition:.2s;flex-shrink:0;user-select:none}
+.chip svg{flex-shrink:0;color:var(--t3)}
+.chip:active{border-color:var(--orange);color:var(--orange);background:var(--orange-l)}
+.chip:active svg{color:var(--orange)}
 .chip i{font-style:normal;font-size:13px;line-height:1}
 .chip span{line-height:1}
 .chat-bottom .chat-input-wrap{padding:6px 16px 12px}
@@ -291,11 +288,13 @@ img,svg{display:block}
 .ai-link:hover{color:var(--orange)}
 
 /* 机会卡片（整张可点击，简约灰白） */
-.ai-opp-card{display:block;padding:12px 14px;margin:8px 0;background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);text-decoration:none;color:inherit;transition:.15s;cursor:pointer}
-.ai-opp-card:active{background:var(--bg)}
+.ai-opp-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin:6px 0;background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);text-decoration:none;color:inherit;transition:.15s;cursor:pointer;text-align:left}
+.ai-opp-card:hover,.ai-opp-card:active{background:var(--bg);border-color:var(--t3)}
+.ai-opp-card > div:first-child{flex:1;min-width:0}
+a.ai-opp-card::after{content:'→';font-size:14px;color:var(--t3);flex-shrink:0}
 .ai-opp-card .ai-opp-title{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:4px}
 .ai-opp-card .ai-opp-meta{font-size:12px;color:var(--t3);margin-bottom:0}
-.ai-opp-wrap{display:flex;flex-direction:column;gap:6px;margin-top:12px;max-width:100%}
+.ai-opp-wrap{display:flex;flex-direction:column;gap:4px;margin-top:12px;max-width:100%}
 
 /* 话术引用块 */
 .ai-quote{background:var(--orange-ll);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:12px 14px;margin:8px 0}
@@ -410,6 +409,26 @@ img,svg{display:block}
 .prof-stats>div{flex:1;text-align:center}
 .prof-stats strong{display:block;font-size:20px;font-weight:700;color:var(--t1);margin-bottom:1px}
 .prof-stats span{font-size:10px;color:var(--t3)}
+.prof-login-card{background:var(--orange-l);border:1px solid var(--orange);border-radius:var(--r-md);padding:14px 16px;margin-top:20px;margin-bottom:16px;text-align:center}
+.prof-login-hint{font-size:13px;color:var(--t2);margin-bottom:10px}
+.prof-user-card{display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 16px;margin-top:20px;margin-bottom:16px}
+.prof-user-phone{font-size:14px;font-weight:600;color:var(--t1)}
+.btn-ghost-sm{padding:6px 14px;font-size:12px;background:none;border:1px solid var(--border);border-radius:var(--r-full);color:var(--t2);cursor:pointer}
+.btn-ghost-sm:active{background:var(--bg)}
+
+/* login */
+.login-wrap{max-width:320px;margin:0 auto;padding-top:20px}
+.login-desc{font-size:13px;color:var(--t2);text-align:center;margin-bottom:24px}
+.login-phone input{width:100%;padding:13px 16px;font-size:16px;border:1.5px solid #E8E8E8;border-radius:var(--r-md);margin-bottom:10px;outline:none}
+.login-phone input:focus{border-color:var(--orange)}
+.login-row{display:flex;gap:10px;margin-bottom:10px}
+.login-row input{flex:1;min-width:0}
+.btn-block{width:100%;margin-top:8px;padding:14px}
+.login-divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.login-divider span{font-size:12px;color:var(--t3)}
+.btn-wechat{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 16px;background:#07C160;color:#fff;border-radius:var(--r-md);font-size:15px;font-weight:600;text-decoration:none;border:none;cursor:pointer}
+.btn-wechat:active{opacity:.9}
 
 /* menu */
 .menu{margin-bottom:16px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border)}
@@ -478,11 +497,13 @@ img,svg{display:block}
 .toast.ok{border:1px solid var(--green);color:var(--green)}
 .toast.err{border:1px solid var(--red);color:var(--red)}
 
-/* ======== AI 回复卡片（气泡内） ======== */
+/* ======== AI 回复卡片（气泡内，简约灰白） ======== */
 .msg-bub .ai-card{background:none;border:none;border-radius:0;padding:0 0 10px;margin:0 0 8px;border-bottom:1px solid var(--border)}
 .msg-bub .ai-card:first-child{margin-top:2px}
 .msg-bub .ai-card:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
 .msg-bub .ai-card-hd{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:6px;padding:0}
+.msg-bub .ai-card-hd{display:flex;align-items:center;gap:6px}
+.msg-bub .ai-card-hd::before{content:'';display:inline-block;width:3px;height:12px;background:var(--t2);opacity:.5;border-radius:2px;flex-shrink:0}
 .msg-bub .ai-card-bd{font-size:13.5px;line-height:1.7;color:var(--t2)}
 
 /* 规则引擎卡片兼容 */
@@ -509,19 +530,19 @@ img,svg{display:block}
 /* 类型分析标签 */
 .ai-type-tag{display:inline-block;padding:3px 10px;background:var(--bg);color:var(--t2);border-radius:var(--r-full);font-size:11px;font-weight:500;margin:4px 0 6px 40px}
 
-/* ===== 工具调用（极简行内） ===== */
+/* ===== 工具调用（极简灰白，无彩色） ===== */
 .tc-panel{padding:6px 0;font-size:12px;color:var(--t3)}
 .tc-hd{display:none}
 .tc-body{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.tc-row{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg);border-radius:var(--r-full);font-size:11px;border:1px solid var(--border)}
+.tc-row{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg);border-radius:var(--r-full);font-size:11px;border:1px solid var(--border);color:var(--t2)}
 .tc-row[data-status="running"]{background:var(--white);border-color:var(--border)}
 .tc-row[data-status="done"]{background:var(--white);color:var(--t2)}
-.tc-icon{font-size:12px;flex-shrink:0}
-.tc-name{color:var(--t1);font-weight:500}
+.tc-icon{font-size:11px;flex-shrink:0;opacity:.6}
+.tc-name{color:var(--t2);font-weight:500}
 .tc-status{font-size:10px;color:var(--t3)}
 .tc-pending{color:var(--t3)}
-.tc-running{color:var(--t2)}
-.tc-done{color:var(--t2)}
+.tc-running{color:var(--t3)}
+.tc-done{color:var(--t3)}
 .tc-spin{display:inline-block;width:8px;height:8px;border:1.5px solid var(--t3);border-top-color:transparent;border-radius:50%;animation:tcSpin .6s linear infinite}
 @keyframes tcSpin{to{transform:rotate(360deg)}}
 .tc-foot{display:none}

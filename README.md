@@ -54,8 +54,17 @@ git push -u origin main
 
 ---
 
+## 登录与云端同步
+
+在「我的」页面可登录（手机号验证码 / 微信扫码）。登录后数据自动云端同步，换设备也不丢失。
+
+- **手机号登录**：需运行后端服务，验证码开发模式下输出到服务器控制台
+- **微信扫码登录**：需在 [微信开放平台](https://open.weixin.qq.com/) 申请网站应用，配置 `WECHAT_APP_ID`、`WECHAT_APP_SECRET`（见 `server/env.example`）
+- **Vercel 部署**：当前仅为静态站点，登录功能需单独部署后端（如 Railway、Render）
+
 ## 技术栈
 
 - 前端：HTML5 / CSS3 / JavaScript (PWA)
 - AI：DeepSeek（Function Calling）
 - 后端（可选）：Node.js + Express + JSON 文件存储
+- 认证：JWT、手机验证码、微信 OAuth2

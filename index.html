@@ -202,32 +202,21 @@
         <button class="hd-btn" onclick="Advisor.newChat()" title="新对话"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
       </header>
       <div class="pg-body chat-body" id="chatBody">
-        <!-- 居中欢迎状态 -->
+        <!-- 居中欢迎状态：极简留白，参考主流 AI 对话空态 -->
         <div class="chat-welcome" id="chatWelcome">
-          <div class="cw-agent-badge">Agent</div>
-          <h3 class="cw-title">AI 军师</h3>
-          <p class="cw-desc">我是你的专属智能助手，拥有 12 项技能<br>越用越了解你，帮你解决实际问题</p>
+          <p class="cw-question">有什么我能帮你的吗？</p>
           <div class="cw-memory-hint" id="cwMemoryHint"></div>
-          <div class="cw-skills-row">
-            <span class="cw-skill-tag">财务分析</span>
-            <span class="cw-skill-tag">机会搜索</span>
-            <span class="cw-skill-tag">记账</span>
-            <span class="cw-skill-tag">预算</span>
-            <span class="cw-skill-tag">谈判话术</span>
-            <span class="cw-skill-tag">学习计划</span>
-            <span class="cw-skill-tag">记忆</span>
-          </div>
         </div>
         <div id="chatMsgs"></div>
       </div>
       <div class="chat-bottom" id="chatBottom">
         <div class="chat-chips" id="chatChips">
-          <div class="chip" onclick="Advisor.start('survival')"><span>分析我的情况</span></div>
-          <div class="chip" onclick="Advisor.start('debt')"><span>债务谈判</span></div>
-          <div class="chip" onclick="Advisor.showSearch()"><span>帮我找机会</span></div>
-          <div class="chip" onclick="Advisor.start('skill')"><span>技能速成</span></div>
-          <div class="chip" onclick="Advisor.start('save')"><span>极限省钱</span></div>
-          <div class="chip" onclick="Advisor.showMemory()"><span>我的记忆</span></div>
+          <div class="chip" onclick="Advisor.start('survival')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg><span>分析我的情况</span></div>
+          <div class="chip" onclick="Advisor.start('debt')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span>债务谈判</span></div>
+          <div class="chip" onclick="Advisor.showSearch()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>帮我找机会</span></div>
+          <div class="chip" onclick="Advisor.start('skill')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg><span>技能速成</span></div>
+          <div class="chip" onclick="Advisor.start('save')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span>极限省钱</span></div>
+          <div class="chip" onclick="Advisor.showMemory()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>我的记忆</span></div>
         </div>
         <div class="chat-input-wrap">
           <input id="chatInp" type="text" placeholder="告诉军师你需要什么帮助…" autocomplete="off">
@@ -264,6 +253,32 @@
       </div>
     </section>
 
+    <!-- ================ 登录 ================ -->
+    <section id="pg-login" class="pg">
+      <header class="hd">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="hd-title">登录</span><span class="hd-r"></span>
+      </header>
+      <div class="pg-body">
+        <div class="login-wrap">
+          <p class="login-desc">登录后数据云端同步，换设备也不丢失</p>
+          <div class="login-phone">
+            <input id="loginPhone" type="tel" placeholder="请输入11位手机号" maxlength="11">
+            <div class="login-row">
+              <input id="loginCode" type="text" placeholder="验证码" maxlength="6">
+              <button id="btnSendCode" class="btn-ghost">获取验证码</button>
+            </div>
+            <button id="btnPhoneLogin" class="btn-main btn-block">手机号登录</button>
+          </div>
+          <div class="login-divider"><span>或</span></div>
+          <a id="btnWechatLogin" href="#" class="btn-wechat">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578-.857-5.058 0-7.636C9.228 3.52 9.105 2.188 8.691 2.188z"/></svg>
+            微信扫码登录
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- ================ 个人中心 ================ -->
     <section id="pg-profile" class="pg">
       <header class="hd"><span class="hd-r"></span><span class="hd-title">我的</span><button class="hd-btn" onclick="App.go('pg-settings')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button></header>
@@ -283,6 +298,14 @@
           <div class="menu-item" onclick="App.showSub()"><span>服务等级</span><em class="menu-badge">免费版</em><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="menu-item" onclick="App.go('pg-settings')"><span>设置</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="menu-item" onclick="App.exportData()"><span>导出数据</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+        <div id="profLoginCard" class="prof-login-card">
+          <p class="prof-login-hint">登录后数据云端同步</p>
+          <button class="btn-main btn-sm" onclick="App.go('pg-login')">登录 / 注册</button>
+        </div>
+        <div id="profUserCard" class="prof-user-card" style="display:none">
+          <span id="profUserPhone" class="prof-user-phone"></span>
+          <button class="btn-ghost-sm" onclick="Auth.logout()">退出</button>
         </div>
       </div>
     </section>
@@ -350,7 +373,8 @@
     <div id="toast" class="toast"></div>
   </div>
 
-  <script src="storage.js?v=6"></script>
+  <script src="storage.js?v=7"></script>
+  <script src="auth.js?v=7"></script>
   <script src="rule-engine.js?v=6"></script>
   <script src="agent.js?v=6"></script>
   <script src="app.js?v=6"></script>

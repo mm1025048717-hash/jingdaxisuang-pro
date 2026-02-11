@@ -1,11 +1,19 @@
 /* 精打细算 Pro - 存储层（API + localStorage 兜底） */
 (function() {
   const API_KEYS = ['userData', 'agent-memory', 'usage', 'aiTotal', 'tasksDone', 'ai-provider', 'ai-apikey', 'ai-daily-used', 'ai-last-reset', 'opp-scanner-cache', 'expense-records'];
+  const TOKEN_KEY = 'auth_token';
+
+  function getAuthHeader() {
+    const t = localStorage.getItem(TOKEN_KEY);
+    return t ? { 'Authorization': 'Bearer ' + t } : {};
+  }
 
   function tryPullFromServer() {
     try {
       const xhr = new XMLHttpRequest();
       xhr.open('GET', '/api/sync', false);
+      const h = getAuthHeader();
+      for (const k in h) xhr.setRequestHeader(k, h[k]);
       xhr.send();
       if (xhr.status === 200) {
         const d = JSON.parse(xhr.responseText);
@@ -31,6 +39,8 @@
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/sync', false);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      const h = getAuthHeader();
+      for (const k in h) xhr.setRequestHeader(k, h[k]);
       xhr.send(JSON.stringify({ data }));
     } catch (e) {}
   }

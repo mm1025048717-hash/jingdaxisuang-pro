@@ -32,6 +32,7 @@ const App = {
     this.loadCfg();
     this.restoreForm();
     this.setGreeting();
+    if (typeof Auth !== 'undefined') Auth.init();
   },
 
   /* ---------- events ---------- */
@@ -112,7 +113,7 @@ const App = {
     if (id === 'pg-dash') this.updateDash();
     if (id === 'pg-opps') Opps.init();
     if (id === 'pg-advisor') this.updateAdvisorHeader();
-    if (id === 'pg-profile') this.updateProfile();
+    if (id === 'pg-profile') { this.updateProfile(); if (typeof Auth !== 'undefined') Auth.refreshProfileUI(); }
     if (id === 'pg-memory') this.renderMemory();
     if (sub && id === 'pg-advisor') setTimeout(() => Advisor.start(sub), 250);
   },
@@ -569,9 +570,9 @@ const Advisor = {
               const src = _escHtml(o.source || '');
               const url = (o.url || '').trim();
               if (url) {
-                return `<a href="${_escHtml(url)}" target="_blank" rel="noopener" class="ai-opp-card"><div class="ai-opp-title">${title}</div><div class="ai-opp-meta">${src}${pay}</div></a>`;
+                return `<a href="${_escHtml(url)}" target="_blank" rel="noopener" class="ai-opp-card"><div><div class="ai-opp-title">${title}</div><div class="ai-opp-meta">${src}${pay}</div></div></a>`;
               }
-              return `<div class="ai-opp-card" style="cursor:default"><div class="ai-opp-title">${title}</div><div class="ai-opp-meta">${src}${pay}</div></div>`;
+              return `<div class="ai-opp-card" style="cursor:default;pointer-events:none"><div><div class="ai-opp-title">${title}</div><div class="ai-opp-meta">${src}${pay}</div></div></div>`;
             }).join('');
             cardsHtml = `<div class="ai-opp-wrap">${cardsHtml}</div>`;
           }
@@ -941,10 +942,10 @@ function addTypeTag(label) {
 
 /* ---- 工具调用面板（实时展示 Agent 调用了哪些技能） ---- */
 const TOOL_ICONS = {
-  analyze_finances: '📊', search_opportunities: '🔍', track_expense: '📝',
-  get_expense_history: '📋', create_budget: '💰', check_bills: '📄',
-  generate_script: '🗣️', learn_skill_plan: '📚', open_platform: '🔗',
-  update_financial_data: '🔄', save_memory: '🧠', get_memory: '💭'
+  analyze_finances: '·', search_opportunities: '·', track_expense: '·',
+  get_expense_history: '·', create_budget: '·', check_bills: '·',
+  generate_script: '·', learn_skill_plan: '·', open_platform: '·',
+  update_financial_data: '·', save_memory: '·', get_memory: '·'
 };
 
 function showToolCallPanel(allCalls) {
@@ -1030,7 +1031,14 @@ function renderSkillBadges(executedSkills) {
   scrollChat();
 }
 
-function scrollChat() { const cb = $('chatBody'); if (cb) setTimeout(() => cb.scrollTop = cb.scrollHeight, 40); }
+function scrollChat() {
+  const cb = $('chatBody');
+  if (!cb) return;
+  const scrollToBottom = () => { cb.scrollTop = cb.scrollHeight; };
+  requestAnimationFrame(scrollToBottom);
+  setTimeout(scrollToBottom, 50);
+  setTimeout(scrollToBottom, 200);
+}
 
 /* ==========================================================
    AI 回复渲染器 — 简约可视化卡片
@@ -1065,6 +1073,10 @@ function renderAIMarkdown(text) {
 
   // 0b. 清理 AI 可能输出的 HTML 标签（防止 <b class="ai-money"> 之类的原始标签泄漏到文本中）
   src = src.replace(/<\/?\s*(?:b|i|em|strong|span|div|p|br|a|h[1-6]|ul|ol|li|table|tr|td|th|thead|tbody|img|code|pre|blockquote|hr|font|center|small|big|sub|sup|mark|del|ins|s|u)(?:\s+[^>]*)?\s*\/?>/gi, '');
+  // 0c. 清理 AI 输出的残缺 HTML 属性片段（避免 target="_blank" rel="noopener" class="ai-link"> 等以纯文本显示）
+  src = src.replace(/\s+target="_blank"[^>]*>/gi, ' ');
+  src = src.replace(/\s+rel="noopener"[^>]*>/gi, ' ');
+  src = src.replace(/\s+class="[^"]*"\s*>/gi, ' ');
 
   src = src.trim();
   if (!src) return '<p style="color:var(--t3);font-size:13px">正在分析中，请稍候…</p>';
