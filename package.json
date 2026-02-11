@@ -1,0 +1,10 @@
+{
+  "name": "jingdaxisuang-pro",
+  "version": "2.0.0",
+  "description": "精打细算 Pro - AI 生存规划助手",
+  "scripts": {
+    "start": "cd server && npm install && node server.js",
+    "dev": "cd server && npm install && node server.js",
+    "server": "cd server && node server.js"
+  }
+}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>精打细算 Pro</title>
+  <script>if(location.protocol!=='file:')document.write('<link rel="manifest" href="manifest.json">')</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=DIN+Alternate:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=6">
+</head>
+<body>
+
+  <!-- ====== 启动屏 ====== -->
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-logo">
+        <div class="splash-icon-ring"></div>
+        <svg class="splash-bolt" viewBox="0 0 40 40"><path d="M18 4l-8 18h8l-2 14 12-20h-9l3-12z" fill="#FF6B35"/></svg>
+      </div>
+      <p class="splash-name">精打细算<span>Pro</span></p>
+      <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ====== 主容器 ====== -->
+  <div id="app" class="app hide">
+
+    <!-- ================ 引导页 ================ -->
+    <section id="pg-onboard" class="pg show">
+      <div class="ob-wrap">
+        <div class="ob-slides" id="obSlides">
+          <div class="ob-slide active">
+            <div class="ob-img">
+              <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#FFF3EB"/><circle cx="100" cy="100" r="68" fill="none" stroke="#FF6B35" stroke-width="2.5" stroke-dasharray="10 6" opacity=".35"/><path d="M78 118l14-28h14l-7 18h18l-30 24 7-14H78z" fill="#FF6B35"/><circle cx="148" cy="58" r="10" fill="#FFD7BF"/><circle cx="52" cy="72" r="7" fill="#FFE8D6"/><circle cx="155" cy="135" r="8" fill="#FFE0CC"/></svg>
+            </div>
+            <h2>不只算你还能活几天</h2>
+            <p>更告诉你 <em>这几天怎么活</em>，并帮你执行</p>
+          </div>
+          <div class="ob-slide">
+            <div class="ob-img">
+              <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#FFF3EB"/><rect x="55" y="55" width="90" height="90" rx="18" fill="none" stroke="#FF6B35" stroke-width="2.5"/><path d="M78 100h44M78 118h28" stroke="#FF6B35" stroke-width="2.5" stroke-linecap="round"/><circle cx="83" cy="82" r="5" fill="#FF6B35" opacity=".5"/><path d="M135 78l-10 10-5-5" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h2>AI军师实时出谋划策</h2>
+            <p>智能生成 <em>个性化生存方案</em>，自动拆解可执行任务</p>
+          </div>
+          <div class="ob-slide">
+            <div class="ob-img">
+              <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#FFF3EB"/><path d="M65 135V88l35-24 35 24v47" fill="none" stroke="#FF6B35" stroke-width="2.5"/><rect x="86" y="112" width="28" height="23" rx="3" fill="none" stroke="#FF6B35" stroke-width="2.5"/><circle cx="100" cy="52" r="8" fill="#FF6B35" opacity=".4"/><path d="M56 78l14-10M144 78l-14-10" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <h2>机会从不等人</h2>
+            <p>24h 扫描附近兼职、优惠、赚钱机会，<em>精准推送</em></p>
+          </div>
+        </div>
+        <div class="ob-dots" id="obDots"><i class="active"></i><i></i><i></i></div>
+        <button class="btn-main btn-lg" id="btnStart">开始使用</button>
+        <p class="ob-skip" id="btnSkip">已有数据？直接进入 →</p>
+      </div>
+    </section>
+
+    <!-- ================ 数据录入 ================ -->
+    <section id="pg-input" class="pg">
+      <header class="hd">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="hd-title">生存数据录入</span>
+        <span class="hd-r"></span>
+      </header>
+      <div class="pg-body">
+        <!-- 进度 -->
+        <div class="inp-progress">
+          <div class="inp-bar"><div class="inp-bar-fill" id="inpBar"></div></div>
+          <span class="inp-pct" id="inpPct">0 / 4</span>
+        </div>
+
+        <!-- Step 0 资金 -->
+        <div class="inp-step show" data-step="0">
+          <div class="step-hd"><div class="step-ico bg-orange"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><h3>你的钱袋子</h3><p>目前所有能动用的钱</p></div></div>
+          <label class="field"><span>现有存款</span><div class="field-box"><i>¥</i><input id="f-savings" type="number" inputmode="decimal" placeholder="0.00"></div></label>
+          <label class="field"><span>现金 / 零钱 / 余额</span><div class="field-box"><i>¥</i><input id="f-cash" type="number" inputmode="decimal" placeholder="0.00"></div></label>
+          <label class="field"><span>可变现资产 (二手物品等)</span><div class="field-box"><i>¥</i><input id="f-assets" type="number" inputmode="decimal" placeholder="0.00"></div></label>
+        </div>
+
+        <!-- Step 1 支出 -->
+        <div class="inp-step" data-step="1">
+          <div class="step-hd"><div class="step-ico bg-red"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6v6H9z"/></svg></div><div><h3>每月硬性支出</h3><p>不花不行的钱</p></div></div>
+          <label class="field"><span>房租</span><div class="field-box"><i>¥</i><input id="f-rent" type="number" inputmode="decimal" placeholder="0"></div></label>
+          <label class="field"><span>水电煤气网费</span><div class="field-box"><i>¥</i><input id="f-utilities" type="number" inputmode="decimal" placeholder="0"></div></label>
+          <label class="field"><span>伙食费 (每月)</span><div class="field-box"><i>¥</i><input id="f-food" type="number" inputmode="decimal" placeholder="0"></div></label>
+          <label class="field"><span>交通费</span><div class="field-box"><i>¥</i><input id="f-transport" type="number" inputmode="decimal" placeholder="0"></div></label>
+          <label class="field"><span>其他必要支出</span><div class="field-box"><i>¥</i><input id="f-other" type="number" inputmode="decimal" placeholder="0"></div></label>
+        </div>
+
+        <!-- Step 2 收入 -->
+        <div class="inp-step" data-step="2">
+          <div class="step-hd"><div class="step-ico bg-green"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div><h3>收入来源</h3><p>钱从哪来？什么时候来？</p></div></div>
+          <label class="field"><span>月固定收入</span><div class="field-box"><i>¥</i><input id="f-income" type="number" inputmode="decimal" placeholder="0"></div></label>
+          <label class="field"><span>下次发薪日期</span><div class="field-box date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><input id="f-payday" type="date"></div></label>
+          <label class="field"><span>预期的临时收入</span><div class="field-box"><i>¥</i><input id="f-temp" type="number" inputmode="decimal" placeholder="0"></div></label>
+        </div>
+
+        <!-- Step 3 债务 & 技能 -->
+        <div class="inp-step" data-step="3">
+          <div class="step-hd"><div class="step-ico bg-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><h3>债务 & 技能</h3><p>欠了多少？你会什么？</p></div></div>
+          <div id="debtWrap">
+            <div class="debt-card">
+              <label class="field"><span>债主名称</span><div class="field-box"><input class="d-name" type="text" placeholder="如：张三 / 花呗"></div></label>
+              <div class="field-row">
+                <label class="field f1"><span>金额</span><div class="field-box"><i>¥</i><input class="d-amt" type="number" inputmode="decimal" placeholder="0"></div></label>
+                <label class="field f1"><span>还款日</span><div class="field-box date"><input class="d-due" type="date"></div></label>
+              </div>
+            </div>
+          </div>
+          <button class="btn-dashed" id="btnAddDebt"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>添加更多债务</button>
+          <div class="field" style="margin-top:20px"><span>你会的技能 (帮AI推荐更好方案)</span>
+            <div class="tags" id="skillTags">
+              <b data-s="driving">🚗 开车</b><b data-s="cooking">🍳 做饭</b><b data-s="repair">🔧 维修</b><b data-s="computer">💻 电脑</b><b data-s="design">🎨 设计</b><b data-s="writing">✍️ 写作</b><b data-s="video">🎬 剪辑</b><b data-s="sales">📢 销售</b><b data-s="teaching">📖 辅导</b><b data-s="labor">💪 体力</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- 导航 -->
+        <div class="inp-nav">
+          <button class="btn-ghost" id="btnPrev" style="visibility:hidden"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>上一步</button>
+          <button class="btn-main" id="btnNext">下一步<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ 仪表盘 ================ -->
+    <section id="pg-dash" class="pg">
+      <header class="hd hd-dash">
+        <div class="hd-dash-left">
+          <p class="hd-greeting" id="greeting">早上好</p>
+          <h2 class="hd-headline">生存概览</h2>
+        </div>
+        <button class="hd-avatar" onclick="App.tab('profile')">
+          <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="17" fill="#FFF3EB" stroke="#FF6B35" stroke-width="1.5"/><circle cx="18" cy="14" r="5" fill="#FFD0B0"/><path d="M8 30c0-5.523 4.477-10 10-10s10 4.477 10 10" fill="#FFD0B0"/></svg>
+        </button>
+      </header>
+
+      <div class="pg-body dash-body">
+        <!-- 生存天数 + 状态 -->
+        <div class="hero-card">
+          <div class="hero-left">
+            <svg class="hero-ring" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#F1F1F1" stroke-width="8"/>
+              <circle id="heroRing" cx="60" cy="60" r="52" fill="none" stroke="#FF6B35" stroke-width="8" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="hero-num"><strong id="heroDay">--</strong><span>天</span></div>
+          </div>
+          <div class="hero-right">
+            <span class="hero-status" id="heroStatus">计算中…</span>
+            <p class="hero-desc" id="heroDesc"></p>
+          </div>
+        </div>
+
+        <!-- 数据 -->
+        <div class="kpi-row">
+          <div class="kpi"><p class="kpi-val" id="kpiMoney">¥0</p><span>可用资金</span></div>
+          <div class="kpi-sep"></div>
+          <div class="kpi"><p class="kpi-val" id="kpiExp">¥0</p><span>月支出</span></div>
+          <div class="kpi-sep"></div>
+          <div class="kpi"><p class="kpi-val" id="kpiBudget">¥0</p><span>日预算</span></div>
+          <div class="kpi-sep"></div>
+          <div class="kpi"><p class="kpi-val" id="kpiPay">--</p><span>距发薪</span></div>
+        </div>
+
+        <!-- 警报 -->
+        <div class="alert-box" id="alertBox" style="display:none">
+          <div class="alert-dot"></div>
+          <div><strong id="alertT"></strong><p id="alertM"></p></div>
+        </div>
+
+        <!-- 账单 -->
+        <div class="card" id="billSec" style="display:none">
+          <div class="card-hd"><span>即将到期</span></div>
+          <div id="billList"></div>
+        </div>
+
+        <!-- 快捷功能 -->
+        <div class="dash-links">
+          <div class="dash-link" onclick="App.tab('advisor')"><span>AI军师 (Agent)</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="dash-link" onclick="App.tab('opps')"><span>机会雷达</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="dash-link" onclick="App.go('pg-advisor','debt')"><span>债务谈判</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="dash-link" onclick="App.go('pg-advisor','save')"><span>极限省钱</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ AI军师 (Agent) ================ -->
+    <section id="pg-advisor" class="pg">
+      <header class="hd hd-chat">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="hd-chat-center">
+          <span class="hd-chat-title">AI 军师</span>
+          <span class="hd-chat-sub"><em id="skillCount">12</em> 项技能 · 记忆 <em id="memoryCount">0</em> 条</span>
+        </div>
+        <button class="hd-btn" onclick="Advisor.newChat()" title="新对话"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+      </header>
+      <div class="pg-body chat-body" id="chatBody">
+        <!-- 居中欢迎状态 -->
+        <div class="chat-welcome" id="chatWelcome">
+          <div class="cw-agent-badge">Agent</div>
+          <h3 class="cw-title">AI 军师</h3>
+          <p class="cw-desc">我是你的专属智能助手，拥有 12 项技能<br>越用越了解你，帮你解决实际问题</p>
+          <div class="cw-memory-hint" id="cwMemoryHint"></div>
+          <div class="cw-skills-row">
+            <span class="cw-skill-tag">财务分析</span>
+            <span class="cw-skill-tag">机会搜索</span>
+            <span class="cw-skill-tag">记账</span>
+            <span class="cw-skill-tag">预算</span>
+            <span class="cw-skill-tag">谈判话术</span>
+            <span class="cw-skill-tag">学习计划</span>
+            <span class="cw-skill-tag">记忆</span>
+          </div>
+        </div>
+        <div id="chatMsgs"></div>
+      </div>
+      <div class="chat-bottom" id="chatBottom">
+        <div class="chat-chips" id="chatChips">
+          <div class="chip" onclick="Advisor.start('survival')"><span>分析我的情况</span></div>
+          <div class="chip" onclick="Advisor.start('debt')"><span>债务谈判</span></div>
+          <div class="chip" onclick="Advisor.showSearch()"><span>帮我找机会</span></div>
+          <div class="chip" onclick="Advisor.start('skill')"><span>技能速成</span></div>
+          <div class="chip" onclick="Advisor.start('save')"><span>极限省钱</span></div>
+          <div class="chip" onclick="Advisor.showMemory()"><span>我的记忆</span></div>
+        </div>
+        <div class="chat-input-wrap">
+          <input id="chatInp" type="text" placeholder="告诉军师你需要什么帮助…" autocomplete="off">
+          <button class="chat-send" id="btnSend" onclick="Advisor.send()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ 机会雷达 ================ -->
+    <section id="pg-opps" class="pg">
+      <header class="hd">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="hd-title">机会雷达</span>
+        <button class="hd-btn" id="oppRefreshBtn" onclick="Opps.refresh(true)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
+      </header>
+      <div class="pg-body">
+
+        <!-- 简洁状态提示（扫描时才显示） -->
+        <div class="radar-hint" id="radarHint" style="display:none">
+          <span class="radar-dot scanning"></span>
+          <span id="radarHintTxt">AI 扫描中…</span>
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="filter-bar" id="filterBar">
+          <b class="active" data-f="all">全部</b><b data-f="parttime">兼职</b><b data-f="gig">零工</b><b data-f="sell">变现</b><b data-f="coupon">薅羊毛</b><b data-f="task">悬赏</b>
+        </div>
+
+        <!-- 列表 -->
+        <div id="oppList" class="opp-list"></div>
+        <div class="empty" id="oppEmpty" style="display:none">
+          <p>暂无匹配机会</p><span>请先录入技能信息</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ 个人中心 ================ -->
+    <section id="pg-profile" class="pg">
+      <header class="hd"><span class="hd-r"></span><span class="hd-title">我的</span><button class="hd-btn" onclick="App.go('pg-settings')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button></header>
+      <div class="pg-body">
+        <div class="prof-top">
+          <h3>生存者</h3>
+          <p id="profLevel">战斗模式</p>
+        </div>
+        <div class="prof-stats">
+          <div><strong id="psDay">0</strong><span>使用天数</span></div>
+          <div><strong id="psAI">0</strong><span>AI咨询</span></div>
+          <div><strong id="psTask">0</strong><span>完成任务</span></div>
+        </div>
+        <div class="menu">
+          <div class="menu-item" onclick="App.go('pg-input')"><span>修改财务数据</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="menu-item" onclick="App.go('pg-memory')"><span>记忆库</span><em class="menu-badge" id="memCountBadge">0</em><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="menu-item" onclick="App.showSub()"><span>服务等级</span><em class="menu-badge">免费版</em><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="menu-item" onclick="App.go('pg-settings')"><span>设置</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <a class="menu-item" href="创业计划书.html" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border:none;background:none;width:100%;cursor:pointer"><span>创业计划书</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></a>
+          <div class="menu-item" onclick="App.exportData()"><span>导出数据</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ 记忆库 ================ -->
+    <section id="pg-memory" class="pg">
+      <header class="hd">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="hd-title">记忆库</span><span class="hd-r"></span>
+      </header>
+      <div class="pg-body">
+        <p class="mem-desc">AI 在对话中自动记录你的背景、偏好、目标等信息，用于个性化回复。可在此查看和删除。</p>
+        <div class="mem-list" id="memList"></div>
+        <div class="empty" id="memEmpty" style="display:none">
+          <p>暂无记忆</p><span>在军师对话中告诉我你的情况，AI 会自动记住</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ 设置 ================ -->
+    <section id="pg-settings" class="pg">
+      <header class="hd">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="hd-title">设置</span><span class="hd-r"></span>
+      </header>
+      <div class="pg-body">
+        <p class="set-label">AI 设置</p>
+        <div class="set-group">
+          <div class="set-row"><span>AI 服务商</span><select id="setCfgProvider" class="set-sel"><option value="deepseek" selected>DeepSeek（已配置）</option><option value="rule">规则引擎（离线）</option><option value="qwen">通义千问</option><option value="wenxin">文心一言</option><option value="kimi">Kimi</option></select></div>
+          <div class="set-row" id="rowApiKey"><span>API Key</span><input id="setCfgKey" type="password" class="set-inp" placeholder="输入密钥"></div>
+        </div>
+        <p class="set-label">通知</p>
+        <div class="set-group">
+          <div class="set-row"><span>机会推送</span><label class="sw"><input type="checkbox" checked><i></i></label></div>
+          <div class="set-row"><span>账单提醒</span><label class="sw"><input type="checkbox" checked><i></i></label></div>
+        </div>
+        <p class="set-label">数据</p>
+        <div class="set-group">
+          <div class="set-row danger" onclick="App.clearData()"><span>清除所有数据</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#EF4444" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+        </div>
+        <div class="set-footer"><p>精打细算 Pro v2.0</p><p>数据仅存储在本地，不会上传服务器</p></div>
+      </div>
+    </section>
+
+    <!-- ====== 订阅弹窗 ====== -->
+    <div class="modal-mask" id="modalSub" style="display:none" onclick="App.closeSub()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-bar"></div>
+        <h3>选择服务等级</h3>
+        <div class="plan active"><em>当前</em><b>生存版</b><strong>免费</strong><ul><li>3次AI/天</li><li>基础生存建议</li><li>存款计算器</li></ul></div>
+        <div class="plan hot"><em>🔥 推荐</em><b>战斗版</b><strong>¥9.9<span>/月</span></strong><ul><li>10次AI/天</li><li>机会实时推送</li><li>债务谈判官</li><li>每日执行清单</li></ul><button class="btn-main btn-sm">升级</button></div>
+        <div class="plan"><b>突围版</b><strong>¥29.9<span>/月</span></strong><ul><li>无限AI</li><li>专属AI训练</li><li>1对1优化</li></ul><button class="btn-ghost-sm">升级</button></div>
+      </div>
+    </div>
+
+    <!-- Tab Bar (全局) -->
+    <nav class="tabbar" id="tabbar" style="display:none">
+      <div class="tb active" data-t="dash" onclick="App.tab('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>首页</span></div>
+      <div class="tb" data-t="advisor" onclick="App.tab('advisor')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span>军师</span></div>
+      <div class="tb" data-t="opps" onclick="App.tab('opps')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>机会</span></div>
+      <div class="tb" data-t="profile" onclick="App.tab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>我的</span></div>
+    </nav>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="storage.js?v=6"></script>
+  <script src="rule-engine.js?v=6"></script>
+  <script src="agent.js?v=6"></script>
+  <script src="app.js?v=6"></script>
+</body>
+</html>

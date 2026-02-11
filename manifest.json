@@ -1,0 +1,17 @@
+{
+  "name": "精打细算 Pro",
+  "short_name": "精打细算",
+  "description": "集成AI的智能生存计算器，帮你度过经济困难期",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF6B35",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23FF6B35'/><path d='M38 60l10-22h10l-5 14h14l-22 18 5-10H38z' fill='white'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
