@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "精打细算 Pro"
+      }
+    },
+    {
+      "path": "pages/dash/dash",
+      "style": {
+        "navigationBarTitleText": "生存概览"
+      }
+    },
+    {
+      "path": "pages/input/input",
+      "style": {
+        "navigationBarTitleText": "录入数据"
+      }
+    },
+    {
+      "path": "pages/advisor/advisor",
+      "style": {
+        "navigationBarTitleText": "AI 军师"
+      }
+    },
+    {
+      "path": "pages/opps/opps",
+      "style": {
+        "navigationBarTitleText": "机会雷达"
+      }
+    },
+    {
+      "path": "pages/profile/profile",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "精打细算 Pro",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F5F5"
+  }
+}

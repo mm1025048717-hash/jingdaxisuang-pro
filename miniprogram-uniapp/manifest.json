@@ -1,0 +1,21 @@
+{
+  "name": "精打细算 Pro",
+  "appid": "__UNI__JDSX",
+  "description": "生存规划 · AI军师 · 机会雷达 · 钱紧不慌",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true
+  },
+  "mp-weixin": {
+    "appid": "请替换为你的小程序AppID",
+    "setting": {
+      "urlCheck": false,
+      "es6": true
+    }
+  },
+  "h5": {
+    "title": "精打细算 Pro"
+  }
+}
