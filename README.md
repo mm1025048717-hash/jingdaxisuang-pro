@@ -50,7 +50,7 @@ git push -u origin main
 
 ## 创业计划书
 
-在 App 内「我的」页面点击「创业计划书」可查看完整商业计划，或直接打开 [创业计划书.html](创业计划书.html)。
+网页版商业计划书含产品原型嵌入、技术/市场/团队等完整内容。直接打开 [创业计划书.html](创业计划书.html) 或在线版 [jingdaxisuang-pro.vercel.app/创业计划书.html](https://jingdaxisuang-pro.vercel.app/%E5%88%9B%E4%B8%9A%E8%AE%A1%E5%88%92%E4%B9%A6.html)。
 
 ---
 
