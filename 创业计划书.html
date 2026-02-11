@@ -20,19 +20,11 @@
     .bp-nav a { color: var(--t2); font-size: 13px; text-decoration: none; padding: 4px 10px; border-radius: 6px; }
     .bp-nav a:hover { color: var(--orange); background: var(--orange-l); }
 
-    /* 产品原型高保真 */
+    /* 产品原型（来自 md 内嵌） */
     .bp-prototype { background: linear-gradient(180deg, #fff 0%, #fafafa 100%); padding: 40px 20px 50px; text-align: center; }
-    .bp-prototype h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--t1); }
-    .bp-prototype p { font-size: 14px; color: var(--t2); margin-bottom: 24px; }
     .bp-phone-frame { display: inline-block; background: #1a1a1a; border-radius: 32px; padding: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.25), 0 0 0 3px #333; }
     .bp-phone-inner { width: 320px; height: 580px; border-radius: 24px; overflow: hidden; background: #fff; }
     .bp-phone-inner iframe { width: 100%; height: 100%; border: none; display: block; }
-    .bp-prototype-actions { margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .bp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-decoration: none; transition: .2s; }
-    .bp-btn-primary { background: var(--orange); color: #fff; border: none; }
-    .bp-btn-primary:hover { background: #C94D1A; color: #fff; }
-    .bp-btn-ghost { background: #fff; color: var(--orange); border: 2px solid var(--orange); }
-    .bp-btn-ghost:hover { background: var(--orange-l); }
 
     /* 计划书正文 */
     .bp-wrap { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -74,20 +66,6 @@
       <a href="#policy">计划书正文</a>
     </nav>
   </header>
-
-  <section class="bp-prototype" id="prototype">
-    <h2>产品原型高保真</h2>
-    <p>精打细算 Pro 已上线，下方可交互体验；阅读计划书时可随时返回顶部体验</p>
-    <div class="bp-phone-frame">
-      <div class="bp-phone-inner">
-        <iframe src="index.html" title="精打细算 Pro 产品原型"></iframe>
-      </div>
-    </div>
-    <div class="bp-prototype-actions">
-      <a href="index.html" class="bp-btn bp-btn-primary" target="_blank">在新窗口打开体验</a>
-      <a href="https://jingdaxisuang-pro.vercel.app/" class="bp-btn bp-btn-ghost" target="_blank">在线正式版 ↗</a>
-    </div>
-  </section>
 
   <main class="bp-wrap">
     <div class="bp-toc">

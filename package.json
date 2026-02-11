@@ -5,6 +5,10 @@
   "scripts": {
     "start": "cd server && npm install && node server.js",
     "dev": "cd server && npm install && node server.js",
-    "server": "cd server && node server.js"
+    "server": "cd server && node server.js",
+    "docx": "node scripts/md2docx.js"
+  },
+  "devDependencies": {
+    "@mohtasham/md-to-docx": "^2.6.1"
   }
 }
