@@ -2,6 +2,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
+const os = require('os');
+const { spawn } = require('child_process');
 const db = require('./db');
 const jwt = require('jsonwebtoken');
 
@@ -167,4 +170,28 @@ app.post('/api/sync', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`精打细算 Pro 后端已启动: http://localhost:${PORT}`);
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        console.log(`  手机访问: http://${net.address}:${PORT} （与电脑同一 WiFi）`);
+        break;
+      }
+    }
+  }
+  // 自动启动 OpenClaw（用户无需手动操作，打开产品即联动）
+  if (process.env.OPENCLAW_AUTO_START !== '0' && process.env.OPENCLAW_AUTO_START !== 'false') {
+    const isWin = process.platform === 'win32';
+    const cmd = isWin ? 'npx.cmd' : 'npx';
+    const token = process.env.OPENCLAW_GATEWAY_TOKEN || 'local-dev-123';
+    const args = ['openclaw@latest', 'gateway', '--port', '18789', '--allow-unconfigured', '--token', token];
+    try {
+      const proc = spawn(cmd, args, { detached: true, stdio: 'ignore', windowsHide: true });
+      proc.unref();
+      proc.on('error', () => {});
+      setTimeout(() => {
+        http.get('http://localhost:18789', () => console.log('[OpenClaw] 已自动启动')).on('error', () => {});
+      }, 5000);
+    } catch (_) {}
+  }
 });

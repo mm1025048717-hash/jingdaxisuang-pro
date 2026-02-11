@@ -25,7 +25,10 @@ const App = {
       sp.classList.add('out');
       setTimeout(() => { sp.style.display = 'none'; document.getElementById('app').classList.remove('hide'); }, 500);
       const saved = RuleEngine.loadUserData();
-      if (saved) { this.go('pg-dash'); }
+      if (saved) {
+        if (typeof AgentMemory !== 'undefined') AgentMemory.syncFromUserData();
+        this.go('pg-dash');
+      }
     }, 1800);
 
     this.bind();
@@ -85,7 +88,9 @@ const App = {
     // settings
     $('setCfgProvider').onchange = e => {
       AIService.setProvider(e.target.value);
-      $('rowApiKey').style.display = e.target.value === 'rule' ? 'none' : 'flex';
+      const hide = e.target.value === 'rule';
+      $('rowApiKey').style.display = hide ? 'none' : 'flex';
+      $('rowTestApi').style.display = hide ? 'none' : 'flex';
     };
     $('setCfgKey').onchange = e => AIService.setApiKey(e.target.value);
   },
@@ -112,7 +117,7 @@ const App = {
 
     if (id === 'pg-dash') this.updateDash();
     if (id === 'pg-opps') Opps.init();
-    if (id === 'pg-advisor') this.updateAdvisorHeader();
+    if (id === 'pg-advisor') { this.updateAdvisorHeader(); setTimeout(scrollChat, 100); }
     if (id === 'pg-profile') { this.updateProfile(); if (typeof Auth !== 'undefined') Auth.refreshProfileUI(); }
     if (id === 'pg-memory') this.renderMemory();
     if (sub && id === 'pg-advisor') setTimeout(() => Advisor.start(sub), 250);
@@ -205,6 +210,9 @@ const App = {
       tempIncome: v('f-temp'), debts, skills,
       createdAt: new Date().toISOString()
     });
+
+    // 同步关键信息到 AI 记忆，越用越懂
+    if (typeof AgentMemory !== 'undefined') AgentMemory.syncFromUserData();
 
     const u = JSON.parse(localStorage.getItem('usage') || '{}');
     if (!u.first) u.first = new Date().toISOString();
@@ -389,10 +397,53 @@ const App = {
   },
 
   loadCfg() {
+    const gw = $('setOpenClawGateway');
+    if (gw) gw.value = localStorage.getItem('openclaw-gateway') || '';
     const p = localStorage.getItem('ai-provider') || 'deepseek';
     $('setCfgProvider').value = p;
     $('setCfgKey').value = localStorage.getItem('ai-apikey') || AIService.DEFAULT_KEY;
-    $('rowApiKey').style.display = p === 'rule' ? 'none' : 'flex';
+    const hide = p === 'rule';
+    $('rowApiKey').style.display = hide ? 'none' : 'flex';
+    $('rowTestApi').style.display = hide ? 'none' : 'flex';
+  },
+
+  async testDeepSeek() {
+    const inp = $('setCfgKey');
+    const btn = $('btnTestDeepSeek');
+    const key = (inp?.value || AIService.apiKey || '').trim();
+    if (!key || !key.startsWith('sk-')) {
+      this.toast('请先填写 API Key', 'err');
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = '测试中…'; }
+    this.toast('正在验证…');
+    try {
+      const resp = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [{ role: 'user', content: '你好' }],
+          max_tokens: 5,
+          stream: false
+        })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.choices?.[0]?.message) {
+          this.toast('DeepSeek 连接成功', 'ok');
+        } else {
+          this.toast('响应格式异常', 'err');
+        }
+      } else {
+        const err = await resp.json().catch(() => ({}));
+        const msg = err?.error?.message || `HTTP ${resp.status}`;
+        this.toast('连接失败：' + (msg.includes('invalid') ? '密钥无效' : msg), 'err');
+      }
+    } catch (e) {
+      this.toast('网络错误：' + (e.message || '请检查网络'), 'err');
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '测试 DeepSeek'; }
   },
 
   restoreForm() {
@@ -425,6 +476,9 @@ const App = {
    ========================================================== */
 const Advisor = {
   currentType: null,
+  adjustMode: false,
+  /** 对话历史 [{role,content}]，用于多轮上下文，便于 AI 捕捉并记忆用户信息 */
+  chatHistory: [],
 
   /* ---- 隐藏欢迎态 ---- */
   _hideWelcome() {
@@ -439,6 +493,10 @@ const Advisor = {
     const msgs = $('chatMsgs');
     if (msgs) msgs.innerHTML = '';
     this.currentType = null;
+    this.adjustMode = false;
+    this.chatHistory = [];
+    const inp = $('chatInp');
+    if (inp) inp.placeholder = '告诉军师你需要什么帮助…';
     App.toast('已开启新对话');
   },
 
@@ -446,6 +504,62 @@ const Advisor = {
   showSearch() {
     this._hideWelcome();
     addAI(renderAIMarkdown('【机会搜索】\n\n告诉我你想找什么，我会调用搜索技能帮你全网查找。\n\n比如直接说：\n· "帮我找适合在家做的兼职"\n· "日结工作有哪些"\n· "我会设计，有什么接单机会"\n· "最近有什么薅羊毛活动"'));
+  },
+
+  /** 上次机会搜索的关键词（用于小龙虾执行） */
+  lastOpenClawKeywords: '视频剪辑 兼职 日结',
+
+  /** 统一入口：复制指令并打开面板（OpenClaw 禁止 iframe，改用新窗口） */
+  sendToOpenClaw() {
+    const kw = this.lastOpenClawKeywords || '视频剪辑 兼职 日结';
+    const cmd = '帮我搜索 ' + kw + '，在 58 同城或 BOSS 直聘找兼职机会';
+    this._copyOpenClawCmd(cmd);
+    const gateway = (localStorage.getItem('openclaw-gateway') || (location.protocol + '//' + location.hostname + ':18789')).replace(/\/$/, '');
+    const btn = $('oclOpenBtn');
+    if (btn) { btn.href = gateway; btn.target = '_blank'; }
+    const panel = $('modalOpenClaw');
+    if (panel) { panel.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  },
+
+  closeOpenClawPanel() {
+    const panel = $('modalOpenClaw');
+    if (panel) { panel.style.display = 'none'; document.body.style.overflow = ''; }
+  },
+
+  _copyOpenClawCmd(cmd) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(cmd).then(() => App.toast('已复制，粘贴到 Telegram 发给小龙虾', 'ok'));
+    } else {
+      const t = document.createElement('textarea'); t.value = cmd; document.body.appendChild(t); t.select();
+      document.execCommand('copy'); document.body.removeChild(t);
+      App.toast('已复制', 'ok');
+    }
+  },
+
+  /** 复制给 OpenClaw：更新关键词并打开内嵌面板（从按钮 data-kw 或默认） */
+  copyForOpenClaw(btn) {
+    const kw = (btn?.dataset?.kw || this.lastOpenClawKeywords || '视频剪辑 兼职 日结').replace(/&#39;/g, "'");
+    this.lastOpenClawKeywords = kw;
+    this.sendToOpenClaw();
+  },
+
+  /** 一键触发机会搜索（用于调整规划后的快捷入口） */
+  quickSearch() {
+    this._hideWelcome();
+    addUser('帮我搜索具体的赚钱机会');
+    this._doAICall(null, '帮我搜索具体的赚钱机会');
+  },
+
+  /* ==== 调整规划：基于用户建议重新制定财务方案 ==== */
+  startAdjust() {
+    this._hideWelcome();
+    this.adjustMode = true;
+    const inp = $('chatInp');
+    if (inp) {
+      inp.placeholder = '输入你的建议，如：伙食费降到600、做视频剪辑赚钱、交通省100…';
+      inp.focus();
+    }
+    addAI(renderAIMarkdown('【调整规划】\n\n说说你的想法，军师会根据你的建议重新制定财务方案。\n\n例如：\n· 伙食费降到每月 ¥600\n· 交通费省 ¥100\n· 想做视频剪辑/日结兼职赚钱'));
   },
 
   /* ---- 从机会雷达跳来问AI ---- */
@@ -469,23 +583,20 @@ const Advisor = {
       return;
     }
 
-    // 规则引擎模式
-    if (AIService.provider === 'rule') {
+    // 规则引擎模式 或 无有效 API Key（直接走本地，不发起无效请求）
+    if (AIService.provider === 'rule' || !AIService.hasValidKey()) {
       removeEl(tid);
       AIService.incrementUsage();
       App.updateAdvisorHeader();
       bumpAI();
       this._doRuleEngine(type, userPrompt);
+      if (AIService.provider !== 'rule' && !AIService.hasValidKey()) {
+        addAI('<p style="font-size:12px;color:var(--t3);margin-top:8px">💡 在「我的 → 设置」中填写 DeepSeek API Key 后即可使用 AI 军师（<a href="https://platform.deepseek.com" target="_blank" rel="noopener" class="ai-link">免费获取</a>）</p>');
+      }
       return;
     }
 
-    // 显示类型分析标签（让用户知道AI在做什么）
-    if (type) {
-      const tagLabels = { survival: '⚡ 财务分析', debt: '⚡ 债务分析', opportunity: '⚡ 机会扫描', skill: '⚡ 技能评估', save: '⚡ 财务分析' };
-      addTypeTag(tagLabels[type] || '⚡ AI分析');
-    }
-
-    // 构建用户消息
+    // 构建用户消息（类微信：不展示类型标签，保持对话简洁）
     let agentMessage = userPrompt || '';
     if (type && !userPrompt) {
       const sessionTypes = { survival: '请分析我的财务状况并给出生存方案', debt: '请帮我制定债务还款策略和谈判话术', opportunity: '请帮我搜索适合我的赚钱机会', skill: '请推荐我适合学的技能并给出速成计划', save: '请帮我制定极限省钱方案' };
@@ -503,19 +614,18 @@ const Advisor = {
       // 优先尝试 AgentCore（带技能调度）
       let toolResults = [];
       if (typeof AgentCore !== 'undefined') {
-        let toolPanelId = null;
+        Advisor.chatHistory.push({ role: 'user', content: agentMessage });
         const result = await AgentCore.run(agentMessage, {
-          onSkillStart(allCalls) {
-            toolPanelId = showToolCallPanel(allCalls);
-            if (toolPanelId && tid) removeEl(tid);
-          },
-          onEachSkill(allCalls, idx, status) { updateToolCallPanel(toolPanelId, allCalls); },
-          onSkillDone(allCalls) { finalizeToolCallPanel(toolPanelId, allCalls); }
+          history: Advisor.chatHistory.slice(0, -1),
+          onSkillStart() { /* 类微信：不展示工具面板，仅保留思考动画 */ },
+          onEachSkill() {},
+          onSkillDone() {}
         });
         aiContent = result.content || '';
         executedSkills = result.executedSkills || [];
         toolResults = result.toolResults || [];
-        if (toolPanelId) removeEl(toolPanelId);
+        // 将 AI 回复加入对话历史，下次请求可参考
+        Advisor.chatHistory.push({ role: 'assistant', content: aiContent });
       } else {
         // AgentCore 不可用，直接调 DeepSeek API（带超时）
         const context = RuleEngine.calculateSurvival();
@@ -531,7 +641,7 @@ const Advisor = {
             body: JSON.stringify({
               model: 'deepseek-chat',
               messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userContent }],
-              max_tokens: 2000, temperature: 0.8, stream: false
+              max_tokens: 8192, temperature: 0.8, stream: false
             }),
             signal: controller.signal
           });
@@ -550,11 +660,6 @@ const Advisor = {
       App.updateAdvisorHeader();
       bumpAI();
       removeEl(tid);
-
-      // 显示已执行的技能标签
-      if (executedSkills.length > 0) {
-        renderSkillBadges(executedSkills);
-      }
 
       // 机会搜索结果：与回复合并为同一气泡（卡片整张可点击）
       let cardsHtml = '';
@@ -579,24 +684,52 @@ const Advisor = {
         } catch (_) {}
       }
 
-      // 单次 addAI：文本 + 卡片 + 跳转按钮 合并
-      let fullHtml = renderAIMarkdown(aiContent);
+      // 财务数据可视化（DataAgent 风格）
+      let vizHtml = '';
+      const finIdx = executedSkills.indexOf('analyze_finances');
+      if (finIdx >= 0 && toolResults[finIdx]) {
+        try {
+          const finData = JSON.parse(toolResults[finIdx].content);
+          if (finData && !finData.error) vizHtml = renderFinancialDashboard(finData);
+        } catch (_) {}
+      }
+      let fullHtml = (vizHtml ? vizHtml : '') + renderAIMarkdown(aiContent);
       if (cardsHtml) fullHtml += cardsHtml;
-      if (type === 'opportunity' || (userPrompt && /机会|赚钱|兼职|搞钱/.test(userPrompt))) {
-        fullHtml += '<div class="ai-action-row"><button class="ai-action-btn" onclick="App.tab(\'opps\')">去机会雷达查看更多 →</button></div>';
+      if (type === 'opportunity' || (userPrompt && (/机会|赚钱|兼职|搞钱|调整规划|搜索.*机会/.test(userPrompt)))) {
+        let kw = '视频剪辑 兼职 日结';
+        try {
+          const idx = executedSkills.indexOf('search_opportunities');
+          if (idx >= 0 && toolResults[idx]) {
+            const d = JSON.parse(toolResults[idx].content);
+            const titles = (d.opportunities || []).slice(0, 3).map(o => (o.title || '').replace(/\s*[·\-].*/, '')).filter(Boolean);
+            if (titles.length) kw = titles.join(' ');
+            Advisor.lastOpenClawKeywords = kw;
+          }
+        } catch (_) {}
+        const kwSafe = _escHtml(kw).replace(/'/g, '&#39;');
+        fullHtml += '<div class="ai-action-row"><button class="ai-action-btn" onclick="Advisor.copyForOpenClaw(this)" data-kw="' + kwSafe + '">🦞 发给小龙虾</button><button class="ai-action-btn" onclick="Advisor.quickSearch()">帮我找机会 →</button><button class="ai-action-btn" onclick="App.tab(\'opps\')">去机会雷达 →</button></div>';
       }
       addAI(fullHtml);
     } catch (e) {
       console.error('Agent error, falling back to RuleEngine:', e);
+      if (Advisor.chatHistory.length && Advisor.chatHistory[Advisor.chatHistory.length - 1].role === 'user') {
+        Advisor.chatHistory.pop();
+      }
       removeEl(tid);
       AIService.incrementUsage();
       App.updateAdvisorHeader();
       bumpAI();
       this._doRuleEngine(type, userPrompt);
-      const errMsg = e.name === 'AbortError' || (e.message && e.message.includes('超时'))
-        ? '⚡ AI请求超时，已用本地引擎'
-        : '⚡ AI暂不可用，已用本地引擎';
-      addAI(`<p style="font-size:11px;color:var(--t3);margin-top:4px">${_escHtml(errMsg)}</p>`);
+      let errMsg = '⚡ AI暂不可用，已用本地引擎';
+      if (e.name === 'AbortError' || (e.message && e.message.includes('超时'))) {
+        errMsg = '⚡ AI请求超时，已用本地引擎';
+      } else if (e.message && (e.message.includes('401') || e.message.includes('invalid') || e.message.includes('Authentication'))) {
+        localStorage.removeItem('ai-apikey');
+        AIService.apiKey = '';
+        if (typeof App !== 'undefined') App.toast('API 密钥无效，已清除。请在设置中重新填写', 'err');
+        errMsg = `🔑 API 密钥无效或已过期，已自动清除。请前往「我的 → 设置」重新填写 DeepSeek API Key（<a href="https://platform.deepseek.com" target="_blank" rel="noopener" class="ai-link">获取密钥</a>）`;
+      }
+      addAI(`<p style="font-size:12px;color:var(--t3);margin-top:8px;line-height:1.5">${errMsg}</p>`);
     }
   },
 
@@ -604,7 +737,12 @@ const Advisor = {
   _doRuleEngine(type, userPrompt) {
     if (type) {
       const fn = { survival: 'generateSurvivalPlan', debt: 'generateDebtPlan', opportunity: 'generateOpportunities', skill: 'generateSkillPlan', save: 'generateSavingPlan' };
-      addAI(RuleEngine[fn[type] || 'generateSurvivalPlan'](type === 'skill' ? '短视频剪辑' : undefined));
+      let html = RuleEngine[fn[type] || 'generateSurvivalPlan'](type === 'skill' ? '短视频剪辑' : undefined);
+      const finData = RuleEngine.getFinancialData && RuleEngine.getFinancialData();
+      if ((type === 'survival' || type === 'debt' || type === 'save') && finData) {
+        html = renderFinancialDashboard(finData) + html;
+      }
+      addAI(html);
     } else {
       addAI(RuleEngine.generateFreeAnswer(userPrompt));
     }
@@ -621,12 +759,22 @@ const Advisor = {
 
   async send() {
     const inp = $('chatInp');
-    const msg = inp.value.trim();
+    let msg = inp.value.trim();
     if (!msg) return;
     inp.value = '';
+    if (inp) inp.placeholder = '告诉军师你需要什么帮助…';
     this._hideWelcome();
-    addUser(msg);
-    await this._doAICall(null, msg);
+    if (inp) setTimeout(() => inp.focus(), 50);
+    setTimeout(() => scrollChat(), 0);
+    if (this.adjustMode) {
+      this.adjustMode = false;
+      const wrapped = '【调整规划】请先调用 analyze_finances 获取我当前的财务数据，再根据以下建议重新制定财务方案。输出格式：1)【节省】每项具体节省+金额 2)【收入提升】立即行动+预估收益 3)【调整后】月支出、月收入、月结余。结尾问：需要我帮你搜索具体的赚钱机会吗？\n\n我的建议：' + msg;
+      addUser('按我的建议调整：' + msg);
+      await this._doAICall(null, wrapped);
+    } else {
+      addUser(msg);
+      await this._doAICall(null, msg);
+    }
   },
 
   /** 从机会雷达跳转到军师，问AI关于某个机会 */
@@ -702,6 +850,23 @@ const Opps = {
   currentFilter: 'all',
   _inited: false,
 
+  /* ---- 快捷搜索（实时跳转真实平台） ---- */
+  quickSearchDiscount() {
+    const items = OpportunityScanner.searchDiscounts ? OpportunityScanner.searchDiscounts().filter(x => x.badge === '打折') : [];
+    if (items.length) this.data = this._merge(items, this.data);
+    this.render('discount');
+  },
+  quickSearchCoupon() {
+    const items = OpportunityScanner.searchDiscounts ? OpportunityScanner.searchDiscounts().filter(x => x.badge === '外卖券') : [];
+    if (items.length) this.data = this._merge(items, this.data);
+    this.render('discount');
+  },
+  quickSearch(keyword) {
+    const items = OpportunityScanner.searchByKeyword(keyword);
+    if (items.length) this.data = this._merge(items, this.data);
+    this.render();
+  },
+
   /* ---- 进入页面 ---- */
   async init() {
     this._showLocalData();
@@ -757,7 +922,7 @@ const Opps = {
     if (AIService.provider === 'rule') return;
 
     this.isScanning = true;
-    this._hint(true, 'AI 正在从全网抓取最新机会…');
+    this._hint(true, '扫描中…');
 
     try {
       const d = RuleEngine.loadUserData();
@@ -791,6 +956,9 @@ const Opps = {
   /* ---- 渲染列表 ---- */
   render(filter) {
     this.currentFilter = filter || this.currentFilter || 'all';
+    document.querySelectorAll('#filterBar b').forEach(b => {
+      b.classList.toggle('active', (b.dataset.f || '') === this.currentFilter);
+    });
     let list = this.data || [];
     if (this.currentFilter !== 'all') list = list.filter(o => o.type === this.currentFilter);
 
@@ -849,9 +1017,19 @@ const Opps = {
         goBtn.href = o.url;
         goBtn.target = '_blank';
         goBtn.rel = 'noopener';
-        goBtn.textContent = '报名';
+        goBtn.textContent = (o.type === 'discount' || o.isSearch) ? '直达' : '报名';
         btns.appendChild(goBtn);
       }
+
+      const oclBtn = document.createElement('button');
+      oclBtn.className = 'opp-ocl';
+      oclBtn.textContent = '🦞';
+      oclBtn.title = '发给小龙虾';
+      oclBtn.onclick = () => {
+        Advisor.lastOpenClawKeywords = (o.title || '').replace(/\s*[·\-（(].*/, '').trim() || '兼职';
+        Advisor.sendToOpenClaw();
+      };
+      btns.appendChild(oclBtn);
 
       const favBtn = document.createElement('button');
       favBtn.className = 'opp-fav';
@@ -1033,11 +1211,77 @@ function renderSkillBadges(executedSkills) {
 
 function scrollChat() {
   const cb = $('chatBody');
+  const msgs = $('chatMsgs');
   if (!cb) return;
-  const scrollToBottom = () => { cb.scrollTop = cb.scrollHeight; };
-  requestAnimationFrame(scrollToBottom);
-  setTimeout(scrollToBottom, 50);
-  setTimeout(scrollToBottom, 200);
+  const scrollToBottom = () => {
+    cb.scrollTop = cb.scrollHeight;
+    const last = msgs ? msgs.lastElementChild : null;
+    if (last) last.scrollIntoView({ block: 'end' });
+  };
+  requestAnimationFrame(() => requestAnimationFrame(scrollToBottom));
+  setTimeout(scrollToBottom, 100);
+  setTimeout(scrollToBottom, 350);
+}
+
+/* ==========================================================
+   数据可视化（DataAgent 风格）
+   ========================================================== */
+
+function renderFinancialDashboard(data) {
+  if (!data || typeof data !== 'object') return '';
+  const fmt = n => (n >= 10000 ? (n / 10000).toFixed(1) + '万' : Math.round(n).toLocaleString());
+  const money = (data.totalMoney != null ? data.totalMoney : 0);
+  const exp = (data.monthlyExpense != null ? data.monthlyExpense : 0);
+  const inc = (data.income != null ? data.income : 0);
+  const gap = (data.monthlyGap != null ? data.monthlyGap : 0);
+  const days = (data.survivalDays != null ? data.survivalDays : 0);
+  const payday = data.daysToPayday;
+  const budget = (data.dailyBudget != null ? data.dailyBudget : 0);
+  const dailyExp = (data.dailyExpense != null ? data.dailyExpense : 0);
+  const level = data.dangerLevel || 'safe';
+  const expBreak = data.expenses || {};
+
+  const levelCls = level === 'danger' ? 'danger' : level === 'warning' ? 'warning' : 'safe';
+  const survivalPct = Math.min(100, days && payday ? (days / Math.max(payday, 1)) * 100 : (days ? Math.min(100, days / 90 * 100) : 0));
+  const budgetPct = dailyExp > 0 ? Math.min(100, (budget / dailyExp) * 100) : 100;
+
+  let expBars = '';
+  const totalExp = (expBreak.rent || 0) + (expBreak.utilities || 0) + (expBreak.food || 0) + (expBreak.transport || 0) + (expBreak.other || 0);
+  if (totalExp > 0) {
+    const items = [
+      [expBreak.rent, '房租'],
+      [expBreak.food, '伙食'],
+      [expBreak.transport, '交通'],
+      [expBreak.utilities, '水电'],
+      [expBreak.other, '其他']
+    ].filter(([v]) => v > 0);
+    expBars = items.map(([v, lbl]) => {
+      const pct = (v / totalExp * 100).toFixed(0);
+      return `<div class="viz-bar-row"><span>${lbl}</span><div class="viz-bar-bg"><div class="viz-bar-fill" style="width:${pct}%"></div></div><span class="viz-bar-val">¥${fmt(v)}</span></div>`;
+    }).join('');
+  }
+
+  return `<div class="viz-dashboard">
+    <div class="viz-hd">
+      <div class="viz-hero">
+        <svg class="viz-ring" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0F0F0" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="var(--${level === 'danger' ? 'red' : level === 'warning' ? 'orange' : 'green'})" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(150.8 * survivalPct / 100).toFixed(1)} ${(150.8 * (100 - survivalPct) / 100).toFixed(1)}" transform="rotate(-90 28 28)"/></svg>
+        <div class="viz-hero-num"><strong>${days}</strong><span>天</span></div>
+      </div>
+      <div class="viz-status viz-${levelCls}">${data.status || ''}</div>
+    </div>
+    <div class="viz-kpi">
+      <div class="viz-kpi-item"><em>¥${fmt(money)}</em><span>可用资金</span></div>
+      <div class="viz-kpi-item"><em>¥${fmt(exp)}</em><span>月支出</span></div>
+      <div class="viz-kpi-item"><em>¥${fmt(inc)}</em><span>月收入</span></div>
+      <div class="viz-kpi-item ${gap < 0 ? 'viz-neg' : ''}"><em>¥${fmt(Math.abs(gap))}</em><span>月${gap >= 0 ? '结余' : '缺口'}</span></div>
+      ${payday != null ? `<div class="viz-kpi-item"><em>${payday}</em><span>距发薪</span></div>` : ''}
+    </div>
+    <div class="viz-budget">
+      <div class="viz-budget-hd"><span>日预算 ¥${budget}</span><span>日均 ¥${Math.round(dailyExp)}</span></div>
+      <div class="viz-bar-bg viz-bar-lg"><div class="viz-bar-fill viz-budget-fill" style="width:${budgetPct}%"></div></div>
+    </div>
+    ${expBars ? `<div class="viz-exp"><div class="viz-exp-hd">支出结构</div>${expBars}</div>` : ''}
+  </div>`;
 }
 
 /* ==========================================================

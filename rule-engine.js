@@ -477,28 +477,36 @@ function opp(type, title, desc, urgency) { return { type, title, desc, urgency }
 
 /* ======== AI 服务层 ======== */
 const AIService = {
-  // 默认使用 DeepSeek
   DEFAULT_PROVIDER: 'deepseek',
-  DEFAULT_KEY: 'sk-a3c2fe5216424c4f8f2d152fd5d8c93b',
+  DEFAULT_KEY: '', // 需用户自行在「设置」中填写 DeepSeek API Key，详见 https://platform.deepseek.com
 
   provider: 'deepseek',
   apiKey: '',
   dailyUsed: 0,
-  dailyLimit: 999999, // 开发模式：无限制
+  dailyLimit: 999999,
   lastReset: null,
 
   init() {
     this.provider = localStorage.getItem('ai-provider') || this.DEFAULT_PROVIDER;
-    this.apiKey = localStorage.getItem('ai-apikey') || this.DEFAULT_KEY;
-    // 开发模式：每次启动重置计数器
+    let key = (localStorage.getItem('ai-apikey') || '').trim();
+    // config.local.js 中的 key 优先（本地开发；若 localStorage 曾被 401 清除则自动恢复）
+    if (typeof window.__DEEPSEEK_API_KEY__ === 'string') {
+      const cfg = window.__DEEPSEEK_API_KEY__.trim();
+      if (cfg && cfg.startsWith('sk-')) {
+        key = cfg;
+        localStorage.setItem('ai-apikey', key);
+      }
+    }
+    if (!key) key = (localStorage.getItem('ai-apikey') || '').trim();
+    this.apiKey = key;
     this.dailyUsed = 0;
     localStorage.setItem('ai-daily-used', '0');
     this.lastReset = new Date().toDateString();
     localStorage.setItem('ai-last-reset', this.lastReset);
-    // 确保有 key
-    if (!this.apiKey) { this.apiKey = this.DEFAULT_KEY; localStorage.setItem('ai-apikey', this.DEFAULT_KEY); }
     if (!localStorage.getItem('ai-provider')) { localStorage.setItem('ai-provider', this.DEFAULT_PROVIDER); }
   },
+
+  hasValidKey() { return !!(this.apiKey && this.apiKey.startsWith('sk-')); },
 
   getRemainingQuota() { return '∞'; },
   incrementUsage() { this.dailyUsed++; localStorage.setItem('ai-daily-used', this.dailyUsed.toString()); },
@@ -650,8 +658,8 @@ const AIService = {
       return { success: false, message: '今日AI次数已用完，明天再来！' };
     }
 
-    // 如果选了规则引擎且没有 key，走规则
-    if (this.provider === 'rule' && !this.apiKey) {
+    // 如果选了规则引擎或没有有效 API Key，走规则
+    if (this.provider === 'rule' || !AIService.hasValidKey()) {
       this.incrementUsage();
       return { success: true, isRuleEngine: true };
     }
@@ -713,7 +721,7 @@ const AIService = {
           { role: 'system', content: sys },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 2000,
+        max_tokens: 8192,
         temperature: 0.8,
         stream: false
       })
@@ -735,7 +743,7 @@ const AIService = {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-      body: JSON.stringify({ model, messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }], max_tokens: 2000, temperature: 0.8 })
+      body: JSON.stringify({ model, messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }], max_tokens: 8192, temperature: 0.8 })
     });
     const data = await resp.json();
     return data.choices[0].message.content;
@@ -889,6 +897,16 @@ const OpportunityScanner = {
 ⊙ 拼多多 — 百亿补贴低价囤货转卖、多多买菜团长
 ⊙ 淘宝/1688 — 无货源开店、一件代发
 
+🛒 打折商品/外卖券（省钱必看）：
+⊙ 拼多多 — 百亿补贴、特价秒杀、多多买菜新人专享
+⊙ 淘宝 — 聚划算、天天特卖、9.9包邮
+⊙ 京东 — 秒杀、京喜特价、PLUS专享
+⊙ 美团外卖 — 神券、红包、满减、天天神券
+⊙ 饿了么 — 红包、津贴、周末五折
+⊙ 麦当劳/肯德基 — 1+1随心配、疯狂星期四、宅急送券
+⊙ 抖音商城 — 限时秒杀、品牌特卖
+⊙ 1688 — 批发特价、一件起批工厂价
+
 💰 薅羊毛/红包：
 ⊙ 支付宝 — 到店红包、蚂蚁森林任务、花呗红包
 ⊙ 微信 — 视频号任务、微信支付红包
@@ -918,8 +936,8 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
 请输出一个 JSON 数组，包含 60-80 条来自不同平台和热点评论挖掘的独家机会。每条格式：
 {
   "title": "具体岗位/活动名（如：朝阳区超市促销员日结180元、抖音评论区爆款需求→代购同款月入5000）",
-  "type": "parttime/coupon/task/sell/gig/trend/startup",
-  "badge": "🔥 兼职/🐑 薅羊毛/💎 悬赏/💰 变现/⚡ 零工/📈 热点商机/🏪 小本创业",
+  "type": "parttime/coupon/task/sell/gig/discount/trend/startup",
+  "badge": "🔥 兼职/🐑 薅羊毛/💎 悬赏/💰 变现/⚡ 零工/🛒 打折/📈 热点商机/🏪 小本创业",
   "source": "平台名（或热搜来源如：微博热搜/抖音热榜/小红书爆文）",
   "pay": "具体金额或利润（如 150-200元/天、利润30-80%、月入3000-8000）",
   "desc": "具体操作步骤（40字以内，写清第一步做什么）",
@@ -939,6 +957,7 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
 9. desc 必须包含"第一步做什么"（如"下载XX→注册→开始"）
 
 【分类覆盖要求——每个分类至少5条】
+⊙ 打折(discount)：至少10条——拼多多百亿补贴、淘宝聚划算、京东秒杀、美团/饿了么外卖券、麦当劳/肯德基优惠、1688特价
 ⊙ 热点商机(trend)：至少15条——从热搜评论中挖掘的商业需求、信息差套利、AI工具变现、热门话题跟拍
 ⊙ 小本创业(startup)：至少10条——摆摊、地摊经济、社区服务、社交电商、私域流量
 ⊙ 兼职(parttime)：至少8条——日结工、临时工、服务员、促销员
@@ -956,6 +975,10 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
     const cache = this.getCache();
     if (cache && !arguments[3]) { // 第4个参数 forceRefresh
       return { success: true, data: cache.data, fromCache: true, timestamp: cache.timestamp };
+    }
+    // 无有效 Key 时直接使用本地数据，避免无效 401 请求
+    if (!AIService.hasValidKey()) {
+      return { success: true, data: this._getFallbackData(skills), fromCache: false, timestamp: Date.now(), fallback: true };
     }
 
     const key = AIService.apiKey || AIService.DEFAULT_KEY;
@@ -1002,7 +1025,7 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
             { role: 'system', content: '你是一个专业的互联网商业机会聚合引擎+热点评论数据分析师。你从全网30+个APP/网站抓取最新赚钱机会，同时分析微博热搜、抖音热榜、小红书爆文、知乎热榜、百度热搜的评论和讨论数据，从中挖掘隐藏的商业需求和赚钱信号。你的数据覆盖：兼职、热点商机、小本创业、信息差套利、AI工具变现、社交电商、摆摊经济、知识付费等全品类。只输出JSON格式，确保可被JSON.parse解析。' },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 8000,
+          max_tokens: 8192,
           temperature: 0.85,
           stream: false
         })
@@ -1045,6 +1068,11 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
       return { success: true, data: normalized, fromCache: false, timestamp: Date.now() };
     } catch (e) {
       clearInterval(progressTimer);
+      if (e.message && (e.message.includes('401') || e.message.includes('invalid') || e.message.includes('Authentication'))) {
+        localStorage.removeItem('ai-apikey');
+        AIService.apiKey = '';
+        if (typeof App !== 'undefined') App.toast('API 密钥无效，已清除。请在设置中重新填写', 'err');
+      }
       console.error('Scanner error:', e);
       // 降级到本地数据
       return { success: true, data: this._getFallbackData(skills), fromCache: false, timestamp: Date.now(), fallback: true };
@@ -1098,6 +1126,7 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
       '悬赏': 'task', 'task': 'task',
       '变现': 'sell', 'sell': 'sell',
       '零工': 'gig', 'gig': 'gig',
+      '打折': 'discount', 'discount': 'discount', '打折优惠': 'discount', '外卖券': 'discount',
       '热点商机': 'trend', 'trend': 'trend', '热点': 'trend',
       '小本创业': 'startup', 'startup': 'startup', '创业': 'startup'
     };
@@ -1105,8 +1134,26 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
   },
 
   _typeToBadge(t) {
-    const map = { parttime: '兼职', coupon: '薅羊毛', task: '悬赏', sell: '变现', gig: '零工', trend: '热点商机', startup: '小本创业' };
+    const map = { parttime: '兼职', coupon: '薅羊毛', task: '悬赏', sell: '变现', gig: '零工', discount: '打折', trend: '热点商机', startup: '小本创业' };
     return map[t] || '兼职';
+  },
+
+  /* ---- 打折商品 + 外卖券 实时搜索（生成真实平台 URL） ---- */
+  searchDiscounts() {
+    const ts = Date.now();
+    const PLATFORMS = [
+      { source: '拼多多', type: 'discount', badge: '打折', title: '百亿补贴 / 特价秒杀', pay: '超低价', desc: '拼多多百亿补贴专区，大牌低价正品', url: 'https://mobile.yangkeduo.com/duo_cms_mall.html?pid=0' },
+      { source: '淘宝', type: 'discount', badge: '打折', title: '聚划算 / 天天特卖', pay: '限时特惠', desc: '淘宝聚划算、天天特卖、9.9包邮', url: 'https://h5.m.taobao.com/mshop/juhuasuan.html' },
+      { source: '京东', type: 'discount', badge: '打折', title: '秒杀 / 京喜特卖', pay: '每日秒杀', desc: '京东秒杀、京喜特价、PLUS专享', url: 'https://pro.m.jd.com/mall/active/3H885vAeEgj9EPMUtB4YFNj8m9hd/index.html' },
+      { source: '1688', type: 'discount', badge: '打折', title: '批发特价货源', pay: '工厂价', desc: '1688特价专区，一件起批低价', url: 'https://s.1688.com/selloffer/offer_search.htm?keywords=%E7%89%B9%E4%BB%B7' },
+      { source: '美团外卖', type: 'discount', badge: '外卖券', title: '神券 / 红包 / 满减', pay: '最高免单', desc: '美团外卖红包、神券、天天神券', url: 'https://h5.waimai.meituan.com/waimai/mindex/home' },
+      { source: '饿了么', type: 'discount', badge: '外卖券', title: '红包 / 津贴 / 商家券', pay: '新人有礼', desc: '饿了么红包、满减、周末五折', url: 'https://h5.ele.me/' },
+      { source: '麦当劳', type: 'discount', badge: '外卖券', title: '麦乐送优惠 / 限时特价', pay: '1+1随心配', desc: '麦当劳APP/小程序领券', url: 'https://www.mcdonalds.com.cn/' },
+      { source: '肯德基', type: 'discount', badge: '外卖券', title: '宅急送优惠 / 周四V金', pay: '疯狂星期四', desc: '肯德基APP/小程序领券', url: 'https://www.kfc.com.cn/' },
+      { source: '抖音商城', type: 'discount', badge: '打折', title: '限时秒杀 / 品牌特卖', pay: '领券再减', desc: '抖音商城好物低价', url: 'https://haohuo.jinritemai.com/views/index/index' },
+      { source: '拼多多', type: 'discount', badge: '打折', title: '搜索特价商品', pay: '低价货源', desc: '拼多多搜索低价好物', url: 'https://mobile.yangkeduo.com/search_result.html?search_key=%E6%89%93%E6%8A%98' },
+    ];
+    return PLATFORMS.map((p, i) => ({ id: ts + 5000 + i, ...p, isSearch: true }));
   },
 
   /* ---- 真实平台机会数据库（80+条，每个平台3-5条） ---- */
@@ -1156,6 +1203,20 @@ ${context ? `⊙ 可用资金：¥${context.totalMoney}（日预算¥${context.d
       o('sell','变现','转转','旧手机/平板回收','100-3000元','转转APP→"手机回收"→自动估价→邮寄→到账','https://www.zhuanzhuan.com/pro/recovery/index.html'),
       o('sell','变现','转转','旧电脑/数码产品回收','200-5000元','笔记本/iPad/相机→在线估价→顺丰上门取件','https://www.zhuanzhuan.com/pro/recovery/index.html'),
       o('sell','变现','转转','二手书/教材回收','1-20元/本','扫码查价→一键下单→快递上门取件','https://www.zhuanzhuan.com/'),
+
+      /* ======== 打折商品 / 外卖券（12条）======== */
+      o('discount','打折','拼多多','百亿补贴特价专区','省10-50%','拼多多→百亿补贴→大牌正品低价','https://mobile.yangkeduo.com/duo_cms_mall.html'),
+      o('discount','打折','淘宝','聚划算 / 天天特卖','限时特惠','淘宝→聚划算→每日限时秒杀','https://h5.m.taobao.com/mshop/juhuasuan.html'),
+      o('discount','打折','京东','秒杀 / 京喜特价','每日秒杀','京东APP→秒杀→9点/12点/20点开抢','https://pro.m.jd.com/mall/active/3H885vAeEgj9EPMUtB4YFNj8m9hd/index.html'),
+      o('discount','外卖券','美团外卖','神券 / 红包 / 满减','最高免单','美团外卖→我的→红包神券→领取','https://h5.waimai.meituan.com/waimai/mindex/home'),
+      o('discount','外卖券','饿了么','红包 / 津贴 / 周末五折','新人有礼','饿了么→我的→红包津贴→每日领取','https://h5.ele.me/'),
+      o('discount','外卖券','麦当劳','1+1随心配 / 麦乐送券','12元起','麦当劳APP→优惠→领取','https://www.mcdonalds.com.cn/'),
+      o('discount','外卖券','肯德基','疯狂星期四 / 宅急送券','周四特惠','肯德基APP→V金商城→领券','https://www.kfc.com.cn/'),
+      o('discount','打折','1688','批发特价 / 一件起批','工厂价','1688→搜"特价"→按销量排序','https://s.1688.com/selloffer/offer_search.htm?keywords=%E7%89%B9%E4%BB%B7'),
+      o('discount','打折','抖音商城','限时秒杀 / 品牌特卖','领券再减','抖音→商城→秒杀/品牌特卖','https://haohuo.jinritemai.com/views/index/index'),
+      o('discount','外卖券','美团','到店团购 / 霸王餐','低价吃大餐','美团→美食→团购→按人气排序','https://h5.meituan.com/meishi/'),
+      o('discount','打折','拼多多','多多买菜新人专享','首单特惠','拼多多→多多买菜→新人专享价','https://mobile.yangkeduo.com/'),
+      o('discount','外卖券','大众点评','霸王餐 / 免费试吃','免费餐饮','大众点评→霸王餐→报名抽奖','https://m.dianping.com/'),
 
       /* ======== 拼多多（4条）======== */
       o('coupon','薅羊毛','拼多多','现金大转盘/签到提现','0.3-5元/天','首页→现金大转盘→每日签到→满额提现','https://mobile.yangkeduo.com/'),

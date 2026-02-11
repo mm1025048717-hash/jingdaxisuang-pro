@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=DIN+Alternate:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -197,7 +197,7 @@
         <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="hd-chat-center">
           <span class="hd-chat-title">AI 军师</span>
-          <span class="hd-chat-sub"><em id="skillCount">12</em> 项技能 · 记忆 <em id="memoryCount">0</em> 条</span>
+          <span class="hd-chat-sub"><em id="skillCount">12</em> 项技能 · 记忆 <em id="memoryCount">0</em> 条 · 🦞</span>
         </div>
         <button class="hd-btn" onclick="Advisor.newChat()" title="新对话"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
       </header>
@@ -205,6 +205,7 @@
         <!-- 居中欢迎状态：极简留白，参考主流 AI 对话空态 -->
         <div class="chat-welcome" id="chatWelcome">
           <p class="cw-question">有什么我能帮你的吗？</p>
+          <p class="cw-tagline">生存规划 · <em>军师在此</em> · 钱紧不慌</p>
           <div class="cw-memory-hint" id="cwMemoryHint"></div>
         </div>
         <div id="chatMsgs"></div>
@@ -216,7 +217,9 @@
           <div class="chip" onclick="Advisor.showSearch()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>帮我找机会</span></div>
           <div class="chip" onclick="Advisor.start('skill')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg><span>技能速成</span></div>
           <div class="chip" onclick="Advisor.start('save')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span>极限省钱</span></div>
+          <div class="chip" onclick="Advisor.startAdjust()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span>调整规划</span></div>
           <div class="chip" onclick="Advisor.showMemory()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>我的记忆</span></div>
+          <div class="chip chip-ocl" onclick="Advisor.sendToOpenClaw()">🦞 小龙虾执行</div>
         </div>
         <div class="chat-input-wrap">
           <input id="chatInp" type="text" placeholder="告诉军师你需要什么帮助…" autocomplete="off">
@@ -234,15 +237,15 @@
       </header>
       <div class="pg-body">
 
-        <!-- 简洁状态提示（扫描时才显示） -->
-        <div class="radar-hint" id="radarHint" style="display:none">
-          <span class="radar-dot scanning"></span>
-          <span id="radarHintTxt">AI 扫描中…</span>
-        </div>
-
-        <!-- 分类筛选 -->
-        <div class="filter-bar" id="filterBar">
-          <b class="active" data-f="all">全部</b><b data-f="parttime">兼职</b><b data-f="gig">零工</b><b data-f="sell">变现</b><b data-f="coupon">薅羊毛</b><b data-f="task">悬赏</b>
+        <!-- 分类筛选 + AI 状态（合并一行） -->
+        <div class="opp-toolbar">
+          <div class="filter-bar" id="filterBar">
+            <b class="active" data-f="all">全部</b><b data-f="discount">打折</b><b data-f="parttime">兼职</b><b data-f="gig">零工</b><b data-f="sell">变现</b><b data-f="coupon">薅羊毛</b><b data-f="task">悬赏</b>
+          </div>
+          <div class="radar-hint-mini" id="radarHint" style="display:none">
+            <span class="radar-dot scanning"></span>
+            <span id="radarHintTxt">扫描中…</span>
+          </div>
         </div>
 
         <!-- 列表 -->
@@ -295,6 +298,7 @@
         <div class="menu">
           <div class="menu-item" onclick="App.go('pg-input')"><span>修改财务数据</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="menu-item" onclick="App.go('pg-memory')"><span>记忆库</span><em class="menu-badge" id="memCountBadge">0</em><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="menu-item" onclick="App.go('pg-openclaw')"><span>OpenClaw 联动</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="menu-item" onclick="App.showSub()"><span>服务等级</span><em class="menu-badge">免费版</em><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="menu-item" onclick="App.go('pg-settings')"><span>设置</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="menu-item" onclick="App.exportData()"><span>导出数据</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C0C0C0" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
@@ -307,6 +311,32 @@
           <span id="profUserPhone" class="prof-user-phone"></span>
           <button class="btn-ghost-sm" onclick="Auth.logout()">退出</button>
         </div>
+      </div>
+    </section>
+
+    <!-- ================ OpenClaw 联动 ================ -->
+    <section id="pg-openclaw" class="pg">
+      <header class="hd">
+        <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+        <span class="hd-title">OpenClaw 联动</span><span class="hd-r"></span>
+      </header>
+      <div class="pg-body">
+        <div class="ocl-intro">
+          <p class="ocl-title">🦞 接入 OpenClaw（小龙虾）帮你在手机/电脑上执行任务</p>
+          <p>OpenClaw 是开源 AI 代理人，可通过 Telegram、WhatsApp 等接收指令，自动打开网页、搜索兼职、执行操作。</p>
+        </div>
+        <div class="ocl-steps">
+          <p class="ocl-h3">安装与配置</p>
+          <ol>
+            <li>终端执行：<code>curl -fsSL https://clawd.org.cn/install.sh | bash</code></li>
+            <li>运行向导：<code>openclaw-cn onboard --install-daemon</code></li>
+            <li>配对 Telegram/WhatsApp，用手机发消息即可控制</li>
+          </ol>
+          <p class="ocl-h3">无缝联动（已集成）</p>
+          <p>· 聊天区有 <b>「🦞 小龙虾执行」</b> chip，一键复制最新搜索指令<br>· 军师推荐机会后，点击 <b>「🦞 发给小龙虾」</b> 复制→ 粘贴到 Telegram 发给小龙虾<br>· 机会雷达每张卡片有 🦞 按钮，可单独发给小龙虾<br>· 在设置中填写网关地址可尝试直连发送</p>
+          <p class="ocl-phone-hint"><strong>📱 手机上用：</strong>电脑开 <code>npm start</code>，手机和电脑同一 WiFi，手机浏览器访问 <code>http://电脑IP:3000</code>（如 192.168.1.100:3000），OpenClaw 会自动连到电脑的网关</p>
+        </div>
+        <a href="https://clawd.org.cn" target="_blank" rel="noopener" class="btn-main">查看 OpenClaw 文档</a>
       </div>
     </section>
 
@@ -335,7 +365,15 @@
         <p class="set-label">AI 设置</p>
         <div class="set-group">
           <div class="set-row"><span>AI 服务商</span><select id="setCfgProvider" class="set-sel"><option value="deepseek" selected>DeepSeek（已配置）</option><option value="rule">规则引擎（离线）</option><option value="qwen">通义千问</option><option value="wenxin">文心一言</option><option value="kimi">Kimi</option></select></div>
-          <div class="set-row" id="rowApiKey"><span>API Key</span><input id="setCfgKey" type="password" class="set-inp" placeholder="输入密钥"></div>
+          <div class="set-row" id="rowApiKey"><span>API Key</span><input id="setCfgKey" type="password" class="set-inp" placeholder="sk- 开头，在 platform.deepseek.com 获取"></div>
+          <div class="set-row" id="rowTestApi">
+            <span>连接测试</span>
+            <button type="button" class="btn-ghost-sm" id="btnTestDeepSeek" onclick="App.testDeepSeek()">测试 DeepSeek</button>
+          </div>
+        </div>
+        <p class="set-label">OpenClaw 联动</p>
+        <div class="set-group">
+          <div class="set-row"><span>网关地址</span><input id="setOpenClawGateway" type="text" class="set-inp" placeholder="留空则自动（本机或局域网IP:18789）" onchange="localStorage.setItem('openclaw-gateway', this.value.trim())"></div>
         </div>
         <p class="set-label">通知</p>
         <div class="set-group">
@@ -349,6 +387,25 @@
         <div class="set-footer"><p>精打细算 Pro v2.0</p><p>数据仅存储在本地，不会上传服务器</p></div>
       </div>
     </section>
+
+    <!-- ====== OpenClaw 内嵌面板（就在这里调用） ====== -->
+    <div class="modal-mask ocl-panel-mask" id="modalOpenClaw" style="display:none" onclick="Advisor.closeOpenClawPanel()">
+      <div class="ocl-panel" onclick="event.stopPropagation()">
+        <div class="ocl-panel-hd">
+          <span>🦞 OpenClaw</span>
+          <button class="ocl-panel-close" onclick="Advisor.closeOpenClawPanel()">×</button>
+        </div>
+        <p class="ocl-panel-hint" id="oclPanelHint">指令已复制</p>
+        <div class="ocl-frame-wrap">
+          <a id="oclOpenBtn" href="#" target="_blank" rel="noopener" class="ocl-open-btn">新窗口打开 OpenClaw →</a>
+          <p class="ocl-paste-hint">在新窗口打开后，按 Ctrl+V（手机长按粘贴）将指令发给小龙虾</p>
+          <div class="ocl-frame-tip">
+            <p><strong>若显示「拒绝连接」</strong>：终端执行 <code>npx openclaw@latest gateway --port 18789 --allow-unconfigured --token local-dev-123</code></p>
+            <p><strong>若显示「gateway token missing」</strong>：在 Dashboard 点 Control → Config，粘贴 <code>local-dev-123</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ====== 订阅弹窗 ====== -->
     <div class="modal-mask" id="modalSub" style="display:none" onclick="App.closeSub()">
@@ -373,10 +430,13 @@
     <div id="toast" class="toast"></div>
   </div>
 
+  <!-- config.local.js 提供 API Key，本地有效；缺失时下面兜底避免 undefined -->
+  <script src="config.local.js"></script>
+  <script>if(typeof window.__DEEPSEEK_API_KEY__==='undefined')window.__DEEPSEEK_API_KEY__='';</script>
   <script src="storage.js?v=7"></script>
   <script src="auth.js?v=7"></script>
-  <script src="rule-engine.js?v=6"></script>
-  <script src="agent.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="rule-engine.js?v=7"></script>
+  <script src="agent.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

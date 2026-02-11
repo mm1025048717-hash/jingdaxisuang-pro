@@ -69,7 +69,7 @@ SkillRegistry.register({
     type: 'object',
     properties: {
       keyword: { type: 'string', description: '搜索关键词，如"日结"、"设计"、"骑手"' },
-      type: { type: 'string', enum: ['parttime', 'coupon', 'task', 'sell', 'gig'], description: '机会类型: parttime=兼职, coupon=薅羊毛, task=悬赏任务, sell=变现, gig=零工' },
+      type: { type: 'string', enum: ['parttime', 'coupon', 'task', 'sell', 'gig', 'discount'], description: '机会类型: parttime=兼职, coupon=薅羊毛, task=悬赏任务, sell=变现, gig=零工, discount=打折商品/外卖券' },
       platform: { type: 'string', description: '平台名称筛选，如"58同城"、"闲鱼"' }
     }
   },
@@ -569,6 +569,20 @@ const AgentMemory = {
   /** 清除所有记忆 */
   clear() {
     localStorage.removeItem(this.STORAGE_KEY);
+  },
+
+  /** 从 userData 同步关键信息到记忆（用户填表/更新数据时调用，越用越懂） */
+  syncFromUserData() {
+    const d = RuleEngine.loadUserData();
+    if (!d) return;
+    const skillNames = { driving: '开车', cooking: '做饭', repair: '维修', computer: '电脑', design: '设计', writing: '写作', video: '视频剪辑', sales: '销售', teaching: '辅导', labor: '体力劳动' };
+    const skills = (d.skills || []).map(s => skillNames[s] || s);
+    if (skills.length) {
+      this.addFact(`用户掌握的技能：${skills.join('、')}`, 'skill');
+    }
+    if (d.rent) this.addFact(`月房租 ¥${d.rent}`, 'background');
+    if (d.food) this.addFact(`月伙食费 ¥${d.food}`, 'background');
+    if (d.income) this.addFact(`月收入 ¥${d.income}`, 'background');
   }
 };
 
@@ -654,7 +668,7 @@ const AgentCore = {
    * @returns {{ content: string, executedSkills: string[], toolResults: object[] }}
    */
   async run(userMessage, options = {}) {
-    const { onSkillStart, onSkillDone } = options;
+    const { onSkillStart, onSkillDone, history = [] } = options;
 
     // 0.5 记录对话次数
     AgentMemory.bumpConversation();
@@ -662,12 +676,14 @@ const AgentCore = {
     // 1. 构建 tools 定义
     const tools = SkillRegistry.toToolDefinitions();
 
-    // 2. 构建消息
+    // 2. 构建消息（支持多轮对话历史，便于 AI 在上下文中捕捉并记忆用户信息）
     const context = RuleEngine.calculateSurvival();
     const systemPrompt = AIService._buildSystemPrompt(context);
 
+    const historyMsgs = Array.isArray(history) ? history.slice(-12) : [];  // 最多 6 轮
     const messages = [
       { role: 'system', content: systemPrompt + this._getAgentSupplement() },
+      ...historyMsgs,
       { role: 'user', content: userMessage }
     ];
 
@@ -919,6 +935,10 @@ ${memoryBlock}
 11. save_memory — 记住用户提到的重要信息（背景/偏好/目标/技能/关注点）
 12. get_memory — 回忆之前记住的用户信息
 
+【OpenClaw 小龙虾联动】
+- 产品已无缝集成 OpenClaw。当推荐赚钱机会、话术、链接时，回复末尾可自然提一句：「点「发给小龙虾」可让 OpenClaw 帮你在电脑/手机执行、打开网页。」
+- 不要冗长解释，一句话带过即可。用户会在界面看到「🦞 发给小龙虾」按钮。
+
 【使用规则】（必须严格按意图选对工具）
 - 当用户问"有哪些赚钱机会"、"找兼职"、"搞钱"、"机会"、"赚钱"时，必须调用 search_opportunities，不要调用 analyze_finances
 - 当用户问到财务状况/生存天数/预算分析时，才调用 analyze_finances
@@ -931,7 +951,7 @@ ${memoryBlock}
 - 当用户想学某个技能，调用 learn_skill_plan
 - 当用户想去某个平台看看，调用 open_platform
 - 当用户想修改某项财务数据，调用 update_financial_data
-- 当用户透露了重要的个人信息（如职业、所在城市、家庭情况、特殊需求、偏好等），主动调用 save_memory 记住
+- 【记忆捕捉】用户用得越多、你记越多、回复越贴心。每次回复前务必审视：用户本轮是否透露了姓名、城市、职业、家庭、偏好、目标、技能（包括对话中补充的）、特殊需求、习惯等？若有，立即调用 save_memory 分批记住（每条一个明确事实）。宁可多记、勿漏记。
 - 当你需要参考之前的对话记忆时，调用 get_memory
 - 闲聊/简单问答不需要调工具，直接回复
 - 可以一次调用多个工具（如同时分析财务+搜索机会+存储记忆）
@@ -941,7 +961,13 @@ ${memoryBlock}
 【机会搜索输出规范】
 - 当调用 search_opportunities 后，回复要简洁
 - 不要输出任何链接、URL、或 HTML，界面会根据工具结果自动生成可点击卡片
-- 只需用 1-3 句话概括推荐思路，或问用户所在城市等以获取更精准结果`;
+- 只需用 1-3 句话概括推荐思路，或问用户所在城市等以获取更精准结果
+
+【调整规划输出规范】（当用户说「按我的建议调整」「根据我的建议」时）
+- 必须先调用 analyze_finances 获取当前财务数据
+- 输出结构：1)【节省】每项具体节省+金额（如：午餐¥8 晚餐¥10 每日伙食¥20 月¥600）2)【收入提升】立即行动+预估（如：①视频剪辑 B站/抖音接单 日结¥100-300）3)【调整后】月支出、月收入、月结余
+- 结尾的追问必须基于你上面给出的具体推荐来写！例如：若推荐了视频剪辑和电脑技能，就问「需要我帮你搜索具体的视频剪辑或电脑技能兼职机会吗？」；若推荐了日结外卖，就问「需要我帮你搜索附近的日结配送机会吗？」。不要用笼统的「赚钱机会」，要指名具体方向。
+- 数字要具体，金额用 ¥ 符号`;
   },
 
   /**
@@ -957,7 +983,7 @@ ${memoryBlock}
     const body = {
       model: 'deepseek-chat',
       messages,
-      max_tokens: 2000,
+      max_tokens: 8192,
       temperature: 0.8,
       stream: false
     };
