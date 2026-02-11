@@ -87,20 +87,16 @@ const RuleEngine = {
     const skills = d.skills || [];
     const debts = d.debts || [];
 
-    let r = card('财务分析', `可用 ¥${totalMoney}，日开销 ¥${Math.round(dailyExpense)}${daysToPayday ? `，${daysToPayday}天后发薪` : ''}：<br><br>`);
-
+    let r = '';
     if (dangerLevel === 'danger') {
-      r += `<span style="color:var(--red);font-weight:700">⚠️ 高危状态</span>：钱${daysToPayday ? '不够撑到发薪日' : `仅够${survivalDays}天`}！<br>`;
       const ud = debts.filter(x => x.name && x.due).sort((a, b) => new Date(a.due) - new Date(b.due))[0];
-      if (ud) { const dl = Math.ceil((new Date(ud.due) - new Date()) / 864e5); r += `🔥 最紧急：${dl}天后要还 ${ud.name} ¥${ud.amount}<br>`; }
-      r += `💡 策略：先保生存，再还债务`;
+      const dl = ud ? Math.ceil((new Date(ud.due) - new Date()) / 864e5) : 0;
+      r += card('致命问题', `<span style="color:var(--orange-d);font-weight:700">⚠️ 钱${daysToPayday ? '不够撑到发薪日' : `仅够${survivalDays}天`}</span>${ud ? ` · ${dl}天后还 ${ud.name} ¥${ud.amount}` : ''}`);
     } else if (dangerLevel === 'warning') {
-      r += `<span style="color:#E5A100;font-weight:700">⚡ 需要警惕</span>：`;
-      r += monthlyGap > 0 ? `每月缺口 ¥${Math.round(monthlyGap)}，需要额外收入` : `资金可维持${survivalDays}天，建议未雨绸缪`;
+      r += card('需要警惕', `<span style="color:var(--orange);font-weight:700">⚡</span> ${monthlyGap > 0 ? `月缺口 ¥${Math.round(monthlyGap)}` : `可维持${survivalDays}天`}`);
     } else {
-      r += `<span style="color:var(--green);font-weight:700">✅ 短期安全</span>：资金可维持${survivalDays}天，可考虑长期规划`;
+      r += card('短期安全', `<span style="color:var(--orange);font-weight:700">✅</span> 可维持${survivalDays}天`);
     }
-    r += `</div></div>`;
 
     // 每日任务
     r += cardOpen('今日清单');
@@ -166,7 +162,7 @@ const RuleEngine = {
 
       r += cardOpen(`债主${i + 1}：${debt.name}`);
       r += `<b>欠款</b>：¥${debt.amount}${dl !== null ? ` · <b>剩余</b>：${dl}天` : ''}<br><br>`;
-      if (dl !== null && dl <= 3) r += `<span style="color:var(--red);font-weight:700">⚠️ 紧急：即将到期！</span><br><br>`;
+      if (dl !== null && dl <= 3) r += `<span style="color:var(--orange-d);font-weight:700">⚠️ 紧急：即将到期！</span><br><br>`;
 
       r += `<b>三步谈判法：</b><br>`;
       r += `<b>第一步</b>：主动联系，表达诚意 → 先问候不提钱<br><br>`;
@@ -262,7 +258,7 @@ const RuleEngine = {
     r += cardOpen('学习计划');
     sk.steps.forEach(s => {
       r += `<div class="ai-task"><div class="ai-ck" onclick="this.classList.toggle('done')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="ai-task-txt"><b>${s[0]}</b>：${s[1]}<br><span style="color:var(--green);font-size:12px">→ ${s[2]}</span></div></div>`;
+        <div class="ai-task-txt"><b>${s[0]}</b>：${s[1]}<br><span style="color:var(--orange);font-size:12px">→ ${s[2]}</span></div></div>`;
     });
     r += `</div></div>`;
 

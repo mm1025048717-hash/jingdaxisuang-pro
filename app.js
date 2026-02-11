@@ -1245,26 +1245,40 @@ function renderFinancialDashboard(data) {
   const survivalPct = Math.min(100, days && payday ? (days / Math.max(payday, 1)) * 100 : (days ? Math.min(100, days / 90 * 100) : 0));
   const budgetPct = dailyExp > 0 ? Math.min(100, (budget / dailyExp) * 100) : 100;
 
-  let expBars = '';
   const totalExp = (expBreak.rent || 0) + (expBreak.utilities || 0) + (expBreak.food || 0) + (expBreak.transport || 0) + (expBreak.other || 0);
-  if (totalExp > 0) {
-    const items = [
-      [expBreak.rent, '房租'],
-      [expBreak.food, '伙食'],
-      [expBreak.transport, '交通'],
-      [expBreak.utilities, '水电'],
-      [expBreak.other, '其他']
-    ].filter(([v]) => v > 0);
-    expBars = items.map(([v, lbl]) => {
-      const pct = (v / totalExp * 100).toFixed(0);
-      return `<div class="viz-bar-row"><span>${lbl}</span><div class="viz-bar-bg"><div class="viz-bar-fill" style="width:${pct}%"></div></div><span class="viz-bar-val">¥${fmt(v)}</span></div>`;
+  const expItems = [
+    [expBreak.rent, '房租', '#E85A24'],
+    [expBreak.food, '伙食', '#C94D1A'],
+    [expBreak.transport, '交通', '#E8A87C'],
+    [expBreak.utilities, '水电', '#D4A574'],
+    [expBreak.other, '其他', '#94A3B8']
+  ].filter(([v]) => v > 0);
+  const expPcts = totalExp > 0 ? expItems.map(([v]) => (v / totalExp * 100).toFixed(1)) : [];
+  let expDonut = '';
+  if (totalExp > 0 && expItems.length) {
+    const C = 2 * Math.PI * 32;
+    let offset = 0;
+    const segs = expItems.map(([v, lbl], i) => {
+      const p = (v / totalExp * 100);
+      const len = (p / 100) * C;
+      const doff = -offset;
+      offset += len;
+      return `<circle cx="40" cy="40" r="32" fill="none" stroke="${expItems[i][2]}" stroke-width="10" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${doff.toFixed(1)}" transform="rotate(-90 40 40)"/>`;
     }).join('');
+    expDonut = `<div class="viz-donut-wrap"><svg class="viz-donut" viewBox="0 0 80 80">${segs}</svg><div class="viz-donut-legend">${expItems.map(([v, lbl], i) => `<span><i style="background:${expItems[i][2]}"></i>${lbl} ${expPcts[i]}%</span>`).join('')}</div></div>`;
   }
+
+  const gapBar = (days != null && payday != null && payday > 0 && payday > days) ? (() => {
+    const total = Math.max(payday, 1);
+    const survW = (days / total * 100);
+    const gapW = (Math.max(0, payday - days) / total * 100);
+    return `<div class="viz-gap-bar"><div class="viz-gap-surv" style="width:${survW}%"></div><div class="viz-gap-miss" style="width:${gapW}%"></div></div><div class="viz-gap-labels"><span>${days}天生存</span><span>缺口${payday - days}天</span><span>${payday}天发薪</span></div>`;
+  })() : '';
 
   return `<div class="viz-dashboard">
     <div class="viz-hd">
       <div class="viz-hero">
-        <svg class="viz-ring" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0F0F0" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="var(--${level === 'danger' ? 'red' : level === 'warning' ? 'orange' : 'green'})" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(150.8 * survivalPct / 100).toFixed(1)} ${(150.8 * (100 - survivalPct) / 100).toFixed(1)}" transform="rotate(-90 28 28)"/></svg>
+        <svg class="viz-ring" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0F0F0" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="var(--${level === 'danger' ? 'orange-d' : level === 'warning' ? 'orange' : 'orange'})" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(150.8 * survivalPct / 100).toFixed(1)} ${(150.8 * (100 - survivalPct) / 100).toFixed(1)}" transform="rotate(-90 28 28)"/></svg>
         <div class="viz-hero-num"><strong>${days}</strong><span>天</span></div>
       </div>
       <div class="viz-status viz-${levelCls}">${data.status || ''}</div>
@@ -1276,11 +1290,12 @@ function renderFinancialDashboard(data) {
       <div class="viz-kpi-item ${gap < 0 ? 'viz-neg' : ''}"><em>¥${fmt(Math.abs(gap))}</em><span>月${gap >= 0 ? '结余' : '缺口'}</span></div>
       ${payday != null ? `<div class="viz-kpi-item"><em>${payday}</em><span>距发薪</span></div>` : ''}
     </div>
+    ${gapBar ? `<div class="viz-gap"><div class="viz-gap-hd">生存 vs 发薪</div>${gapBar}</div>` : ''}
     <div class="viz-budget">
       <div class="viz-budget-hd"><span>日预算 ¥${budget}</span><span>日均 ¥${Math.round(dailyExp)}</span></div>
       <div class="viz-bar-bg viz-bar-lg"><div class="viz-bar-fill viz-budget-fill" style="width:${budgetPct}%"></div></div>
     </div>
-    ${expBars ? `<div class="viz-exp"><div class="viz-exp-hd">支出结构</div>${expBars}</div>` : ''}
+    ${expDonut ? `<div class="viz-exp"><div class="viz-exp-hd">支出结构</div>${expDonut}</div>` : ''}
   </div>`;
 }
 
