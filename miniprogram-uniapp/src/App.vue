@@ -14,7 +14,8 @@ onHide(() => {})
 
 page {
   height: 100%;
-  background: #F5F5F5;
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  background: #F2EEEA;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 </style>

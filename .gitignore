@@ -1,8 +1,11 @@
 node_modules/
 server/node_modules/
 server/data/
+miniprogram-uniapp/node_modules/
+miniprogram-uniapp/dist/
 *.log
 .env
 .env.local
 .DS_Store
 config.local.js
+web/config.local.js

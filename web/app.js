@@ -240,6 +240,8 @@ const App = {
     st.textContent = info.status;
     st.className = 'hero-status ' + s.dangerLevel;
     $('heroDesc').textContent = info.summary;
+    const exit = $('heroExit');
+    if (exit) exit.textContent = s.survivalDays != null && s.survivalDays < 90 ? `这${s.survivalDays}天怎么过？ → 今日可执行清单已生成` : '';
 
     // KPIs
     $('kpiMoney').textContent = '¥' + fmt(s.totalMoney);
@@ -264,6 +266,17 @@ const App = {
           <span class="bill-amt">¥${fmt(b.amount)}</span>
         </div>`).join('');
     } else bs.style.display = 'none';
+
+    // 债务协商入口 A/B 测试：版本 A 理性锚点 / 版本 B 陪伴锚点
+    const debtHint = $('dashDebtHint');
+    if (debtHint) {
+      let v = localStorage.getItem('debtHintAB');
+      if (!v) { v = Math.random() < 0.5 ? 'A' : 'B'; localStorage.setItem('debtHintAB', v); }
+      debtHint.textContent = v === 'A'
+        ? '花呗逾期一天罚息约1.5元，这杯奶茶钱你能省'
+        : '打这个电话之前，先让我教你两句。';
+      debtHint.dataset.version = v; // 便于埋点
+    }
   },
 
   /* ---------- profile ---------- */
@@ -992,6 +1005,30 @@ const Opps = {
     return merged;
   },
 
+  /* ---- 渲染「你适合的」区块 ---- */
+  _renderSuited(list) {
+    const el = $('oppSuited');
+    if (!el) return;
+    const suited = list.filter(o => ['parttime','sell','gig','task'].includes(o.type)).slice(0, 4);
+    if (!suited.length) { el.classList.remove('show'); el.innerHTML = ''; return; }
+    const d = RuleEngine.loadUserData();
+    const skillKw = { design:'设计',video:'视频剪辑',writing:'文案',teaching:'教师',computer:'开发',cooking:'餐饮',driving:'司机',repair:'维修',sales:'销售',labor:'兼职' };
+    const skillStr = (d && d.skills) ? (d.skills.map(s => skillKw[s] || s).filter(Boolean).join('·') || '通用') : '通用';
+    const mockDist = [1.2, 2.5, 0.8, 3.1]; // 占位距离，API 有 dist 时用真实值
+    const items = suited.map((o, i) => {
+      const title = (o.title || '').slice(0, 16) + ((o.title || '').length > 16 ? '…' : '');
+      const dist = (o.dist != null && o.dist !== '') ? o.dist : mockDist[i];
+      const distStr = dist ? ` <em>距${dist}km</em>` : '';
+      const url = (o.url || '').replace(/"/g, '&quot;');
+      return `<div class="opp-suited-item" data-opp-id="${o.id||''}" data-url="${url}" role="button" tabindex="0"><span>${title}${distStr}</span><span>${o.pay||''}</span></div>`;
+    }).join('');
+    el.innerHTML = `<div class="opp-suited-hd">你适合的</div><div class="opp-suited-list">${items}</div><div class="opp-suited-ft">数据实时更新 · 部分需跳转报名</div>`;
+    el.classList.add('show');
+    el.querySelectorAll('.opp-suited-item').forEach(it => {
+      it.onclick = () => { const u = it.dataset.url; if (u) window.open(u, '_blank', 'noopener'); };
+    });
+  },
+
   /* ---- 渲染列表 ---- */
   render(filter) {
     this.currentFilter = filter || this.currentFilter || 'all';
@@ -1001,11 +1038,13 @@ const Opps = {
     let list = this.data || [];
     if (this.currentFilter !== 'all') list = list.filter(o => o.type === this.currentFilter);
 
+    this._renderSuited(list);
+
     const c = $('oppList');
     const em = $('oppEmpty');
     if (!c) return;
 
-    if (!list.length) { c.innerHTML = ''; if (em) em.style.display = 'block'; return; }
+    if (!list.length) { c.innerHTML = ''; if (em) em.style.display = 'block'; $('oppSuited') && $('oppSuited').classList.remove('show'); return; }
     if (em) em.style.display = 'none';
 
     c.innerHTML = '';

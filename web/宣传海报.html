@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>精打细算 Pro · 穷人的紧急出口</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Noto Sans SC',-apple-system,sans-serif;background:#0c0c0c;color:#fff;min-height:100vh;overflow-x:hidden}
+    .poster{min-height:100vh;padding:24px 20px 40px;display:flex;flex-direction:column;align-items:center}
+    .logo{font-size:14px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.1em;margin-bottom:40px;text-transform:uppercase}
+    h1{font-size:clamp(28px,7vw,42px);font-weight:700;text-align:center;line-height:1.3;margin-bottom:8px}
+    h1 .hl{background:linear-gradient(135deg,#E85A24,#FF8A5C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .tagline{font-size:15px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:48px}
+    .cards{display:flex;flex-direction:column;gap:16px;max-width:400px;width:100%;margin-bottom:40px}
+    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 24px;cursor:pointer;transition:all .35s ease;position:relative;overflow:hidden;opacity:0;animation:cardIn .5s ease forwards}
+.card:nth-child(1){animation-delay:.1s}
+.card:nth-child(2){animation-delay:.2s}
+.card:nth-child(3){animation-delay:.3s}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,90,36,.15),transparent);opacity:0;transition:opacity .35s}
+    .card:hover{border-color:rgba(232,90,36,.4);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+    .card:hover::before{opacity:1}
+    .card-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#E85A24,#FF8A5C);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+    .card-before{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:4px}
+    .card-after{font-size:16px;font-weight:600;color:#fff}
+    .card-after .em{color:#E85A24}
+    .cta{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;background:linear-gradient(135deg,#E85A24,#C94D1A);border:none;border-radius:999px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(232,90,36,.4)}
+    .cta:hover{transform:scale(1.03);box-shadow:0 6px 28px rgba(232,90,36,.5)}
+    .cta:active{transform:scale(.98)}
+    .cta svg{width:18px;height:18px}
+    .foot{font-size:12px;color:rgba(255,255,255,.35);margin-top:24px}
+    .demo{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+    .demo.show{display:flex}
+    .demo-inner{background:#fff;border-radius:24px;overflow:hidden;max-width:360px;width:100%;max-height:90vh;box-shadow:0 25px 80px rgba(0,0,0,.5)}
+    .demo-hd{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee}
+    .demo-hd span{font-size:15px;font-weight:600;color:#333}
+    .demo-close{width:36px;height:36px;border:none;background:#f5f5f5;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;color:#666;transition:.2s}
+    .demo-close:hover{background:#eee}
+    .demo iframe{display:block;width:100%;height:600px;border:none}
+    .demo-btn{padding:12px 24px;background:#f5f5f5;border:none;border-radius:12px;color:#333;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block;margin-top:12px;transition:.2s}
+    .demo-btn:hover{background:#eee}
+  </style>
+</head>
+<body>
+  <div class="poster">
+    <div class="logo">精打细算 Pro</div>
+    <h1>穷人的<span class="hl">紧急出口</span></h1>
+    <p class="tagline">钱紧时刻，第一个想起的数字化同伴</p>
+
+    <div class="cards">
+      <div class="card" data-tip="生存">
+        <div class="card-icon">📅</div>
+        <div class="card-before">改前：生存天数 5 天 · 危险等级红色</div>
+        <div class="card-after">这<span class="em">5 天怎么过？</span> → 今日可执行清单已生成</div>
+      </div>
+      <div class="card" data-tip="机会">
+        <div class="card-icon">💰</div>
+        <div class="card-before">改前：机会雷达 · 兼职零工变现</div>
+        <div class="card-after"><span class="em">今天能赚到的钱</span> · 根据技能为你筛选</div>
+      </div>
+      <div class="card" data-tip="债务">
+        <div class="card-icon">📞</div>
+        <div class="card-before">改前：债务谈判官 · 生成话术</div>
+        <div class="card-after"><span class="em">打这个电话之前，先让我教你两句。</span></div>
+      </div>
+    </div>
+
+    <button class="cta" onclick="showDemo()">
+      <span>立即体验</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <p class="foot">生存规划 · AI 军师 · 机会雷达 · 钱紧不慌</p>
+  </div>
+
+  <div class="demo" id="demo">
+    <div class="demo-inner">
+      <div class="demo-hd">
+        <span>精打细算 Pro</span>
+        <button class="demo-close" onclick="hideDemo()">×</button>
+      </div>
+      <iframe src="index.html" title="精打细算 Pro"></iframe>
+      <div style="padding:12px 20px;text-align:center">
+        <a href="index.html" target="_blank" class="demo-btn">新窗口打开 ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showDemo(){ document.getElementById('demo').classList.add('show'); document.body.style.overflow='hidden'; }
+    function hideDemo(){ document.getElementById('demo').classList.remove('show'); document.body.style.overflow=''; }
+    document.getElementById('demo').onclick=function(e){ if(e.target===this) hideDemo(); };
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') hideDemo(); });
+
+    document.querySelectorAll('.card').forEach(c=>{
+      c.addEventListener('click',()=>{ c.style.transform='scale(0.97)'; setTimeout(()=>c.style.transform='',200); });
+    });
+  </script>
+</body>
+</html>

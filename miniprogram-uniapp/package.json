@@ -4,10 +4,10 @@
   "description": "精打细算 Pro - uni-app 版（H5 + 微信小程序）",
   "main": "main.js",
   "scripts": {
-    "dev:h5": "uni -p h5",
-    "dev:mp-weixin": "uni -p mp-weixin",
-    "build:h5": "uni build -p h5",
-    "build:mp-weixin": "uni build -p mp-weixin"
+    "dev:h5": "npx uni -p h5",
+    "dev:mp-weixin": "npx uni -p mp-weixin",
+    "build:h5": "npx uni build -p h5",
+    "build:mp-weixin": "npx uni build -p mp-weixin"
   },
   "dependencies": {
     "vue": "^3.4.0",
@@ -15,13 +15,13 @@
   },
   "devDependencies": {
     "@dcloudio/types": "^3.4.0",
-    "@dcloudio/uni-automator": "3.0.0-4010420240422001",
-    "@dcloudio/uni-cli-shared": "3.0.0-4010420240422001",
-    "@dcloudio/uni-app": "3.0.0-4010420240422001",
-    "@dcloudio/uni-components": "3.0.0-4010420240422001",
-    "@dcloudio/uni-h5": "3.0.0-4010420240422001",
-    "@dcloudio/uni-mp-weixin": "3.0.0-4010420240422001",
-    "@dcloudio/vite-plugin-uni": "3.0.0-4010420240422001",
+    "@dcloudio/uni-automator": "3.0.0-4080720251210001",
+    "@dcloudio/uni-cli-shared": "3.0.0-4080720251210001",
+    "@dcloudio/uni-app": "3.0.0-4080720251210001",
+    "@dcloudio/uni-components": "3.0.0-4080720251210001",
+    "@dcloudio/uni-h5": "3.0.0-4080720251210001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-4080720251210001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-4080720251210001",
     "vite": "^5.0.0"
   }
 }

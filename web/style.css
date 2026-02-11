@@ -168,6 +168,7 @@ img,svg{display:block}
 .hero-status.warning{background:var(--orange-pale);color:var(--orange-d)}
 .hero-status.safe{background:var(--orange-l);color:var(--orange)}
 .hero-desc{font-size:12px;color:var(--t3);line-height:1.5}
+.hero-exit{font-size:11px;color:var(--t3);margin-top:4px;font-weight:500}
 
 /* KPI row */
 .kpi-row{display:flex;background:var(--white);border-radius:var(--r-md);border:1px solid var(--border);margin-bottom:12px;padding:12px 0}
@@ -199,6 +200,9 @@ img,svg{display:block}
 .dash-link:active{background:var(--bg)}
 .dash-link span{font-size:14px;font-weight:500;color:var(--t1)}
 .dash-link svg{color:var(--t3)}
+.dash-debt-wrap{border-bottom:1px solid #F5F5F5}
+.dash-debt-wrap .dash-link{border-bottom:none}
+.dash-debt-hint{font-size:11px;color:var(--t3);padding:8px 16px 2px;line-height:1.4}
 
 /* bg helpers */
 .bg-orange{background:var(--orange)}
@@ -441,11 +445,25 @@ a.ai-opp-card::after{content:'→';font-size:14px;color:var(--t3);flex-shrink:0}
 .chat-send:active{transform:scale(.92);box-shadow:0 1px 4px rgba(232,90,36,.25)}
 
 /* ======== OPPORTUNITIES（简洁版） ======== */
-.opp-toolbar{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.filter-bar{display:flex;gap:6px;overflow-x:auto;padding:0;scrollbar-width:none;-ms-overflow-style:none}
+.hd-opp-title{display:flex;flex-direction:column;gap:0;flex:1;text-align:center}
+.hd-opp-sub{font-size:11px;font-weight:400;color:#B85C2E}
+.opp-suited{display:none;padding:14px 16px 12px;margin-bottom:16px;background:linear-gradient(135deg,#FFFBF9 0%,#FFF8F4 100%);border-radius:12px;font-size:13px}
+.opp-suited.show{display:block}
+.opp-suited-hd{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.opp-suited-hd::before{content:'';width:3px;height:12px;background:var(--orange);border-radius:2px}
+.opp-suited-list{display:flex;flex-direction:column;gap:0}
+.opp-suited-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;cursor:pointer;border-bottom:1px solid rgba(0,0,0,.04);transition:background .15s}
+.opp-suited-item:last-child{border-bottom:none}
+.opp-suited-item:active{background:rgba(232,90,36,.06)}
+.opp-suited-item span:first-child{color:var(--t1);font-size:13px;font-weight:500;flex:1;min-width:0}
+.opp-suited-item span:first-child em{font-weight:400;color:#999;font-size:11px}
+.opp-suited-item span:last-child{font-weight:600;color:var(--orange);font-size:13px;flex-shrink:0;margin-left:12px}
+.opp-suited-ft{font-size:10px;color:#999;text-align:center;margin-top:10px;margin-bottom:0;line-height:1.4}
+.opp-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.filter-bar{display:flex;gap:4px;overflow-x:auto;padding:0;scrollbar-width:none;-ms-overflow-style:none}
 .filter-bar::-webkit-scrollbar{display:none}
-.filter-bar b{padding:5px 12px;background:var(--white);border:1px solid #E8E8E8;border-radius:var(--r-full);font-size:12px;font-weight:500;color:var(--t2);white-space:nowrap;cursor:pointer}
-.filter-bar b.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.filter-bar b{padding:4px 10px;background:transparent;border:none;border-radius:0;font-size:12px;font-weight:400;color:var(--t2);white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.filter-bar b.active{color:var(--t1);font-weight:600;border-bottom-color:var(--orange)}
 
 /* (platform bar removed for simplicity) */
 
@@ -474,7 +492,7 @@ a.ai-opp-card::after{content:'→';font-size:14px;color:var(--t3);flex-shrink:0}
 /* (count indicator removed for simplicity) */
 
 /* ---- 扫描提示（精简） ---- */
-.radar-hint-mini{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;color:var(--t3)}
+.radar-hint-mini{display:flex;align-items:center;gap:6px;font-size:11px;color:#999}
 .radar-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .radar-dot.scanning{background:var(--orange);animation:dotPulse 1s infinite}
 .radar-dot.done{background:var(--orange)}

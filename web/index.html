@@ -155,6 +155,7 @@
           <div class="hero-right">
             <span class="hero-status" id="heroStatus">计算中…</span>
             <p class="hero-desc" id="heroDesc"></p>
+            <p class="hero-exit" id="heroExit"></p>
           </div>
         </div>
 
@@ -185,7 +186,10 @@
         <div class="dash-links">
           <div class="dash-link" onclick="App.tab('advisor')"><span>AI军师 (Agent)</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
           <div class="dash-link" onclick="App.tab('opps')"><span>机会雷达</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
-          <div class="dash-link" onclick="App.go('pg-advisor','debt')"><span>债务谈判</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          <div class="dash-debt-wrap">
+            <p class="dash-debt-hint" id="dashDebtHint">花呗逾期一天罚息约1.5元，这杯奶茶钱你能省</p>
+            <div class="dash-link" onclick="App.go('pg-advisor','debt')"><span>债务谈判</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
           <div class="dash-link" onclick="App.go('pg-advisor','save')"><span>极限省钱</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
         </div>
       </div>
@@ -232,12 +236,15 @@
     <section id="pg-opps" class="pg">
       <header class="hd">
         <button class="hd-back" onclick="App.back()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <span class="hd-title">机会雷达</span>
+        <div class="hd-opp-title">
+          <span class="hd-title">机会雷达</span>
+          <span class="hd-opp-sub">今天能赚到的钱</span>
+        </div>
         <button class="hd-btn" id="oppRefreshBtn" onclick="Opps.refresh(true)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></button>
       </header>
       <div class="pg-body">
-
-        <!-- 分类筛选 + AI 状态（合并一行） -->
+        <div class="opp-suited" id="oppSuited"></div>
+        <!-- 分类筛选 -->
         <div class="opp-toolbar">
           <div class="filter-bar" id="filterBar">
             <b class="active" data-f="all">全部</b><b data-f="discount">打折</b><b data-f="parttime">兼职</b><b data-f="gig">零工</b><b data-f="sell">变现</b><b data-f="coupon">薅羊毛</b><b data-f="task">悬赏</b>

@@ -11,7 +11,7 @@ const { aggregateOpportunities } = require('./opportunities');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const FRONTEND = path.join(__dirname, '..');
+const FRONTEND = path.join(__dirname, '..', 'web');
 const JWT_SECRET = process.env.JWT_SECRET || 'jingdaxisuang-dev-secret-change-in-prod';
 const WECHAT_APP_ID = process.env.WECHAT_APP_ID || '';
 const WECHAT_APP_SECRET = process.env.WECHAT_APP_SECRET || '';
