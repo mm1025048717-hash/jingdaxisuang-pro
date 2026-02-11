@@ -7,6 +7,7 @@ const os = require('os');
 const { spawn } = require('child_process');
 const db = require('./db');
 const jwt = require('jsonwebtoken');
+const { aggregateOpportunities } = require('./opportunities');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -130,6 +131,21 @@ app.delete('/api/kv/:key', (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ========== API：机会雷达 - 实时聚合（对接开放平台 API） ==========
+app.get('/api/opportunities/search', async (req, res) => {
+  try {
+    const keyword = String(req.query.keyword || '').trim();
+    const city = String(req.query.city || '').trim();
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(10, parseInt(req.query.limit, 10) || 30));
+    const result = await aggregateOpportunities({ keyword, city, page, limit });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    console.error('[API] opportunities/search:', e);
+    res.status(500).json({ ok: false, error: e.message, data: [], sources: [], fromRealAPI: false });
   }
 });
 

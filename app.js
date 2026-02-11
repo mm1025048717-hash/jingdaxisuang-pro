@@ -911,19 +911,58 @@ const Opps = {
     setTimeout(() => { h.style.display = 'none'; }, 3000);
   },
 
+  /* ---- 优先尝试后端实时 API（实习僧等开放平台）---- */
+  async _fetchFromBackendAPI(keyword = '') {
+    try {
+      const url = `/api/opportunities/search?keyword=${encodeURIComponent(keyword)}&limit=30`;
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      const json = await r.json();
+      if (json.ok && json.fromRealAPI && json.data && json.data.length > 0) {
+        return { data: json.data, sources: json.sources || [] };
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  },
+
   /* ---- AI 增强 ---- */
   async _tryAIEnhance() {
+    this.isScanning = true;
+    this._hint(true, '连接数据源…');
+
+    // 1. 优先请求后端实时 API（实习僧/聚合数据等，需配置 API Key）
+    try {
+      const d = RuleEngine.loadUserData();
+      const skills = d ? (d.skills || []) : [];
+      const skillKw = { design:'设计',video:'视频剪辑',writing:'文案',teaching:'教师',computer:'开发',cooking:'餐饮',driving:'司机',repair:'维修',sales:'销售',labor:'兼职' };
+      const kw = (skills || []).map(s => skillKw[s] || s).filter(Boolean)[0] || '';
+      const backend = await this._fetchFromBackendAPI(kw);
+      if (backend && backend.data.length) {
+        this.data = this._merge(this.data, backend.data);
+        this._hintDone(`已从 ${(backend.sources || []).join('、')} 获取 ${backend.data.length} 条实时机会`);
+        this.render();
+        this.isScanning = false;
+        return;
+      }
+    } catch (_) {}
+
     const cache = OpportunityScanner.getCache();
     if (cache) {
       this.data = this._merge(this.data, cache.data);
       this.render();
+      this.isScanning = false;
+      this._hint(false);
       return;
     }
-    if (AIService.provider === 'rule') return;
+    if (AIService.provider === 'rule') {
+      this.isScanning = false;
+      this._hint(false);
+      return;
+    }
 
-    this.isScanning = true;
-    this._hint(true, '扫描中…');
-
+    this._hint(true, 'AI 扫描中…');
     try {
       const d = RuleEngine.loadUserData();
       const skills = d ? (d.skills || []) : [];
